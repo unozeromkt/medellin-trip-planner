@@ -1,0 +1,351 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// Auth & Users
+// ─────────────────────────────────────────────
+
+enum UserRole {
+  admin
+  editor
+  operator
+  agency
+  customer
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  name       String?
+  image      String?
+  role       UserRole @default(customer)
+  operatorId String?
+  agencyId   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  operator   Operator? @relation(fields: [operatorId], references: [id])
+  agency     Agency?   @relation(fields: [agencyId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// Operators / Providers
+// ─────────────────────────────────────────────
+
+enum OperatorStatus {
+  pending
+  active
+  suspended
+  inactive
+}
+
+enum CommissionType {
+  percentage
+  fixed
+}
+
+model Operator {
+  id              String         @id @default(cuid())
+  name            String
+  slug            String         @unique
+  logoUrl         String?
+  description     String?
+  commercialName  String?
+  contactName     String?
+  contactEmail    String?
+  contactPhone    String?
+  websiteUrl      String?
+  instagramUrl    String?
+  facebookUrl     String?
+  certifications  String[]
+  status          OperatorStatus @default(pending)
+  commissionType  CommissionType @default(percentage)
+  commissionValue Float          @default(10)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  users           User[]
+  tours           Tour[]
+}
+
+// ─────────────────────────────────────────────
+// Destinations & Categories
+// ─────────────────────────────────────────────
+
+model Destination {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  coverImage  String?
+  region      String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tours       Tour[]
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  icon        String?
+  color       String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tourCategories TourCategory[]
+}
+
+// ─────────────────────────────────────────────
+// Tours
+// ─────────────────────────────────────────────
+
+enum TourStatus {
+  draft
+  pending_review
+  approved
+  published
+  rejected
+  archived
+}
+
+model Tour {
+  id               String     @id @default(cuid())
+  operatorId       String
+  destinationId    String
+  title            String
+  slug             String     @unique
+  shortDescription String?
+  description      String?
+  seoTitle         String?
+  seoDescription   String?
+  priceFrom        Float?
+  currency         String     @default("COP")
+  durationMinutes  Int?
+  meetingPoint     String?
+  capacityMin      Int?
+  capacityMax      Int?
+  includes         String[]
+  excludes         String[]
+  status           TourStatus @default(draft)
+  isFeatured       Boolean    @default(false)
+  isOffer          Boolean    @default(false)
+  publishedAt      DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  // ── AI trip planner fields ──────────────────────────────────
+  departureTimes   String[]                   // ["07:00", "14:00"]
+  returnTime       String?                    // "17:30"
+  isFullDay        Boolean    @default(false)
+  zone             String?                    // norte | centro | sur | oriente | fuera-medellin
+  physicalIntensity String?                   // low | medium | high
+  pickupIncluded   Boolean    @default(false)
+  bookingAdvanceDays Int?                     // minimum days in advance
+  tags             String[]                   // ["mañana", "familiar", "romántico"]
+
+  operator       Operator            @relation(fields: [operatorId], references: [id])
+  destination    Destination         @relation(fields: [destinationId], references: [id])
+  tourCategories TourCategory[]
+  images         TourImage[]
+  schedules      TourSchedule[]
+  itinerary      TourItineraryItem[]
+  faqs           TourFaq[]
+  reviews        TourReview[]
+  leadTours      LeadTour[]
+}
+
+model TourCategory {
+  tourId     String
+  categoryId String
+
+  tour     Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([tourId, categoryId])
+}
+
+model TourImage {
+  id        String  @id @default(cuid())
+  tourId    String
+  url       String
+  altText   String?
+  caption   String?
+  sortOrder Int     @default(0)
+  isCover   Boolean @default(false)
+
+  tour Tour @relation(fields: [tourId], references: [id], onDelete: Cascade)
+}
+
+model TourSchedule {
+  id         String  @id @default(cuid())
+  tourId     String
+  dayOfWeek  Int[]
+  startTime  String
+  endTime    String?
+  notes      String?
+  isActive   Boolean @default(true)
+
+  tour Tour @relation(fields: [tourId], references: [id], onDelete: Cascade)
+}
+
+model TourItineraryItem {
+  id          String  @id @default(cuid())
+  tourId      String
+  stepNumber  Int
+  title       String
+  description String?
+  duration    String?
+
+  tour Tour @relation(fields: [tourId], references: [id], onDelete: Cascade)
+}
+
+model TourFaq {
+  id       String @id @default(cuid())
+  tourId   String
+  question String
+  answer   String
+
+  tour Tour @relation(fields: [tourId], references: [id], onDelete: Cascade)
+}
+
+model TourReview {
+  id         String   @id @default(cuid())
+  tourId     String
+  authorName String
+  rating     Int
+  comment    String?
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  tour Tour @relation(fields: [tourId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// Leads & Experience Builder
+// ─────────────────────────────────────────────
+
+enum LeadStatus {
+  new
+  contacted
+  quoted
+  reserved
+  won
+  lost
+  cancelled
+}
+
+model Lead {
+  id              String     @id @default(cuid())
+  source          String?
+  name            String?
+  email           String?
+  phone           String?
+  travelDate      DateTime?
+  peopleCount     Int?
+  budgetMin       Float?
+  budgetMax       Float?
+  language        String?
+  message         String?
+  whatsappMessage String?
+  whatsappUrl     String?
+  status          LeadStatus @default(new)
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  leadTours LeadTour[]
+}
+
+model LeadTour {
+  id            String   @id @default(cuid())
+  leadId        String
+  tourId        String
+  priceSnapshot Float?
+  createdAt     DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  tour Tour @relation(fields: [tourId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// Agencies (B2B — Phase 2)
+// ─────────────────────────────────────────────
+
+enum AgencyStatus {
+  pending
+  active
+  suspended
+}
+
+model Agency {
+  id          String       @id @default(cuid())
+  name        String
+  contactName String?
+  email       String       @unique
+  phone       String?
+  country     String?
+  city        String?
+  status      AgencyStatus @default(pending)
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  users User[]
+}
+
+// ─────────────────────────────────────────────
+// Blog
+// ─────────────────────────────────────────────
+
+enum BlogStatus {
+  draft
+  published
+  archived
+}
+
+model BlogPost {
+  id             String     @id @default(cuid())
+  title          String
+  slug           String     @unique
+  excerpt        String?
+  content        String?
+  coverImageUrl  String?
+  seoTitle       String?
+  seoDescription String?
+  language       String     @default("es")
+  status         BlogStatus @default(draft)
+  publishedAt    DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Offers
+// ─────────────────────────────────────────────
+
+model Offer {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String?
+  discountPct Float?
+  startsAt    DateTime?
+  endsAt      DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
