@@ -10,8 +10,7 @@ import {
 } from "@phosphor-icons/react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { mockDestinations, mockCategories } from "@/lib/mock-data";
-import type { Category } from "@/lib/types";
+import type { Destination, Category } from "@/lib/types";
 
 /* ─── icon map for categories ────────────────────────────── */
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
@@ -26,18 +25,6 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
   transportation: Bus,
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  nightlife: "#0D1B3D",
-  "city-tours": "#2BB7A6",
-  adventure: "#4B5E7A",
-  party: "#FFC97A",
-  nature: "#2BB7A6",
-  gastronomy: "#E88C30",
-  "vip-experiences": "#0D1B3D",
-  culture: "#A8CBE6",
-  transportation: "#4B5E7A",
-};
-
 /* ─── budget options ─────────────────────────────────────── */
 const BUDGETS = [
   { value: "hasta-250k", label: "Hasta $250.000", sublabel: "COP por persona", min: 0, max: 250000 },
@@ -46,38 +33,38 @@ const BUDGETS = [
   { value: "mas-1m", label: "Más de $1.000.000", sublabel: "COP por persona", min: 1000000, max: Infinity },
 ];
 
-/* ─── helpers ────────────────────────────────────────────── */
 function formatDate(date: Date): string {
   return date.toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export function HeroSearch() {
+interface HeroSearchProps {
+  destinations: Destination[];
+  categories: Category[];
+}
+
+export function HeroSearch({ destinations, categories }: HeroSearchProps) {
   const router = useRouter();
 
-  // Destination autocomplete
   const [destinationQuery, setDestinationQuery] = useState("");
   const [selectedDestSlug, setSelectedDestSlug] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const destRef = useRef<HTMLDivElement>(null);
 
-  // Popovers
   const [catOpen, setCatOpen] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
   const [budgetOpen, setBudgetOpen] = useState(false);
 
-  // Values
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [travelDate, setTravelDate] = useState<Date | undefined>(undefined);
   const [selectedBudget, setSelectedBudget] = useState<(typeof BUDGETS)[0] | null>(null);
 
-  // Destination suggestions
   const suggestions = destinationQuery.length >= 1
-    ? mockDestinations.filter(
+    ? destinations.filter(
         (d) =>
           d.name.toLowerCase().includes(destinationQuery.toLowerCase()) ||
           (d.region ?? "").toLowerCase().includes(destinationQuery.toLowerCase())
       )
-    : mockDestinations;
+    : destinations;
 
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
@@ -89,7 +76,7 @@ export function HeroSearch() {
     return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
 
-  function handleSelectDest(dest: (typeof mockDestinations)[0]) {
+  function handleSelectDest(dest: Destination) {
     setDestinationQuery(dest.name);
     setSelectedDestSlug(dest.slug);
     setShowSuggestions(false);
@@ -117,7 +104,6 @@ export function HeroSearch() {
 
   return (
     <section className="relative min-h-[78vh] flex items-center overflow-hidden">
-      {/* Background image — full brightness, no dark overlay */}
       <Image
         src="/img/guatape-sky.jpg"
         alt="Embalse de Guatapé, Colombia"
@@ -126,12 +112,10 @@ export function HeroSearch() {
         className="object-cover object-center"
         sizes="100vw"
       />
-      {/* Very subtle gradient only at bottom — preserves image brightness */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/20 to-black/35" />
 
       <div className="relative z-10 container mx-auto px-4 py-20 flex flex-col items-center text-center">
 
-        {/* Tag */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -144,7 +128,6 @@ export function HeroSearch() {
           </span>
         </motion.div>
 
-        {/* Headline — text-shadow for readability without overlay */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -166,7 +149,6 @@ export function HeroSearch() {
           Experiencias curadas, operadores verificados y planificación inteligente para tu próximo viaje.
         </motion.p>
 
-        {/* ── Search card — white opaque, floats over the image ── */}
         <motion.form
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -206,7 +188,6 @@ export function HeroSearch() {
                   )}
                 </div>
 
-                {/* Destination dropdown */}
                 {showSuggestions && suggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-xl shadow-xl z-50 overflow-hidden">
                     {suggestions.map((dest) => (
@@ -254,9 +235,9 @@ export function HeroSearch() {
                     Tipo de experiencia
                   </p>
                   <div className="grid grid-cols-3 gap-2 mb-2">
-                    {mockCategories.map((cat) => {
+                    {categories.map((cat) => {
                       const Icon = CATEGORY_ICONS[cat.slug] ?? Tag;
-                      const color = CATEGORY_COLORS[cat.slug] ?? "#2BB7A6";
+                      const color = cat.color ?? "#2BB7A6";
                       const active = selectedCategory?.slug === cat.slug;
                       return (
                         <button
@@ -383,7 +364,6 @@ export function HeroSearch() {
 
             </div>
 
-            {/* Search button */}
             <div className="px-3 pb-3">
               <button
                 type="submit"
@@ -396,7 +376,6 @@ export function HeroSearch() {
           </div>
         </motion.form>
 
-        {/* Popular searches */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

@@ -22,6 +22,13 @@ const leadSchema = z.object({
   source: z.string().optional(),
 });
 
+const BUDGET_RANGES: Record<string, { budgetMin: number; budgetMax: number | null }> = {
+  "hasta-500k": { budgetMin: 0, budgetMax: 500000 },
+  "500k-1m": { budgetMin: 500000, budgetMax: 1000000 },
+  "1m-2m": { budgetMin: 1000000, budgetMax: 2000000 },
+  "mas-2m": { budgetMin: 2000000, budgetMax: null },
+};
+
 export async function POST(request: NextRequest) {
   let body: unknown;
   try {
@@ -41,6 +48,8 @@ export async function POST(request: NextRequest) {
   try {
     const { db } = await import("@/lib/db");
 
+    const budgetRange = data.budget ? BUDGET_RANGES[data.budget] : undefined;
+
     const lead = await db.lead.create({
       data: {
         name: data.name,
@@ -48,6 +57,8 @@ export async function POST(request: NextRequest) {
         email: data.email ?? null,
         travelDate: data.travelDate ? new Date(data.travelDate) : null,
         peopleCount: data.peopleCount,
+        budgetMin: budgetRange?.budgetMin ?? null,
+        budgetMax: budgetRange?.budgetMax ?? null,
         language: data.language ?? null,
         message: data.message ?? null,
         source: data.source ?? "experience-builder",

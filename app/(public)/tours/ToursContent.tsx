@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X, Search } from "lucide-react";
 import { TourCard } from "@/components/tours/TourCard";
@@ -8,8 +9,7 @@ import { CategoryPills } from "@/components/marketing/CategoryPills";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { mockTours, mockCategories, mockDestinations } from "@/lib/mock-data";
-import type { TourSummary } from "@/lib/types";
+import type { TourSummary, Category, Destination } from "@/lib/types";
 
 const PRICE_RANGES = [
   { label: "Hasta $250K", value: "hasta-250k", min: 0, max: 250000 },
@@ -18,7 +18,13 @@ const PRICE_RANGES = [
   { label: "Más de $1M", value: "mas-1m", min: 1000000, max: Infinity },
 ];
 
-export function ToursContent() {
+interface ToursContentProps {
+  initialTours: TourSummary[];
+  categories: Category[];
+  destinations: Destination[];
+}
+
+export function ToursContent({ initialTours, categories, destinations }: ToursContentProps) {
   const searchParams = useSearchParams();
   const urlCategory = searchParams.get("category");
   const urlQuery = searchParams.get("q") ?? "";
@@ -36,7 +42,7 @@ export function ToursContent() {
   const [showFilters, setShowFilters] = useState(false);
 
   const filtered = useMemo(() => {
-    return mockTours.filter((tour) => {
+    return initialTours.filter((tour) => {
       if (urlCategory && !tour.categories.some((c) => c.slug === urlCategory)) return false;
       if (
         searchText &&
@@ -52,7 +58,7 @@ export function ToursContent() {
       }
       return true;
     });
-  }, [urlCategory, searchText, selectedDestination, selectedPriceRange]);
+  }, [initialTours, urlCategory, searchText, selectedDestination, selectedPriceRange]);
 
   const activeFilterCount =
     (urlCategory ? 1 : 0) +
@@ -67,7 +73,6 @@ export function ToursContent() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Page header */}
       <div className="mb-8">
         <h1 className="font-heading text-3xl font-bold text-foreground mb-1">
           Tours y Experiencias
@@ -78,7 +83,6 @@ export function ToursContent() {
         </p>
       </div>
 
-      {/* Search + filter bar */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -104,12 +108,10 @@ export function ToursContent() {
         </Button>
       </div>
 
-      {/* Category pills */}
       <div className="mb-6">
-        <CategoryPills categories={mockCategories} activeSlug={urlCategory} />
+        <CategoryPills categories={categories} activeSlug={urlCategory} />
       </div>
 
-      {/* Expandable filters */}
       {showFilters && (
         <div className="bg-white rounded-2xl border border-border p-5 mb-6 space-y-5">
           <div className="flex items-center justify-between">
@@ -125,13 +127,12 @@ export function ToursContent() {
             )}
           </div>
 
-          {/* Destination filter */}
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
               Destino
             </p>
             <div className="flex flex-wrap gap-2">
-              {mockDestinations.map((dest) => (
+              {destinations.map((dest) => (
                 <button
                   key={dest.id}
                   onClick={() =>
@@ -151,7 +152,6 @@ export function ToursContent() {
             </div>
           </div>
 
-          {/* Price range filter */}
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
               Presupuesto por persona
@@ -177,24 +177,23 @@ export function ToursContent() {
         </div>
       )}
 
-      {/* Active filter chips */}
       {(urlCategory || selectedDestination || selectedPriceRange !== null || urlDate) && (
         <div className="flex flex-wrap gap-2 mb-5">
           {urlCategory && (
-            <a
+            <Link
               href="/tours"
               className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-medium px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors"
             >
-              {mockCategories.find((c) => c.slug === urlCategory)?.name}
+              {categories.find((c) => c.slug === urlCategory)?.name}
               <X className="h-3 w-3" />
-            </a>
+            </Link>
           )}
           {selectedDestination && (
             <button
               onClick={() => setSelectedDestination(null)}
               className="inline-flex items-center gap-1.5 bg-foreground/10 text-foreground text-xs font-medium px-3 py-1.5 rounded-full hover:bg-foreground/15 transition-colors"
             >
-              {mockDestinations.find((d) => d.slug === selectedDestination)?.name}
+              {destinations.find((d) => d.slug === selectedDestination)?.name}
               <X className="h-3 w-3" />
             </button>
           )}
@@ -215,7 +214,6 @@ export function ToursContent() {
         </div>
       )}
 
-      {/* Tours grid */}
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((tour) => (

@@ -84,7 +84,8 @@ export function Footer() {
                 { label: "Nosotros", href: "/about" },
                 { label: "Blog", href: "/blog" },
                 { label: "Proveedores", href: "/provider/dashboard" },
-                { label: "Agencias B2B", href: "/agency" },
+                { label: "Agencias B2B", href: "/agencias" },
+                { label: "Registro Agencias", href: "/agencias/registro" },
               ].map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="hover:text-white transition-colors">

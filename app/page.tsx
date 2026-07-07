@@ -1,32 +1,63 @@
+import Script from "next/script";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { HeroSearch } from "@/components/marketing/HeroSearch";
 import { FeaturedCollections } from "@/components/marketing/FeaturedCollections";
-import { BrandValues } from "@/components/marketing/BrandValues";
 import { FeaturedDestinations } from "@/components/marketing/FeaturedDestinations";
 import { FeaturedTours } from "@/components/marketing/FeaturedTours";
 import { HowItWorks } from "@/components/marketing/HowItWorks";
 import { WhatsAppCTABanner } from "@/components/marketing/WhatsAppCTABanner";
-import { mockTours, mockDestinations } from "@/lib/mock-data";
+import { TrustBar } from "@/components/marketing/TrustBar";
+import { ExperienceBuilderPromo } from "@/components/marketing/ExperienceBuilderPromo";
+import { OperatorBanner } from "@/components/marketing/OperatorBanner";
+import { getPublishedTours, getActiveDestinations, getActiveCategories, getSiteStats } from "@/lib/queries";
+import { getCurrentUserProfile } from "@/lib/auth";
 
-export default function HomePage() {
+const ADMIN_ROLES = ["admin", "editor", "operator"];
+
+export default async function HomePage() {
+  const [tours, destinations, categories, stats, profile] = await Promise.all([
+    getPublishedTours(),
+    getActiveDestinations(),
+    getActiveCategories(),
+    getSiteStats(),
+    getCurrentUserProfile(),
+  ]);
+
+  const navUser =
+    profile && ADMIN_ROLES.includes(profile.role)
+      ? { name: profile.name, email: profile.email, role: profile.role }
+      : null;
+
   return (
     <>
-      <Navbar />
+      <Navbar user={navUser} />
       <main>
-        <HeroSearch />
+        <HeroSearch destinations={destinations} categories={categories} />
+        <TrustBar
+          tours={stats.tours}
+          operators={stats.operators}
+          destinations={stats.destinations}
+        />
         <FeaturedCollections />
         <div className="bg-[#F7F9FC]">
           <div className="container mx-auto px-4">
-            <FeaturedDestinations destinations={mockDestinations} />
+            <FeaturedDestinations destinations={destinations} />
           </div>
         </div>
-        <FeaturedTours tours={mockTours} />
-        {/* <BrandValues /> */}
+        <FeaturedTours tours={tours} />
+        <ExperienceBuilderPromo />
         <HowItWorks />
         <WhatsAppCTABanner />
+        <OperatorBanner />
       </main>
       <Footer />
+      <Script
+        src="https://widgets.leadconnectorhq.com/loader.js"
+        data-resources-url="https://widgets.leadconnectorhq.com/chat-widget/loader.js"
+        data-widget-id="6a3cb1d823af83a13c022f61"
+        strategy="afterInteractive"
+      />
     </>
   );
 }

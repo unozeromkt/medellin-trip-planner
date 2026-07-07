@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ToursContent } from "./ToursContent";
+import { getPublishedTours, getActiveCategories, getActiveDestinations } from "@/lib/queries";
 
 export const metadata: Metadata = {
   title: "Tours y Experiencias",
@@ -8,11 +9,17 @@ export const metadata: Metadata = {
     "Descubre los mejores tours en Medellín, Guatapé y Antioquia. Filtra por categoría, destino y presupuesto.",
 };
 
-export default function ToursPage() {
+export default async function ToursPage() {
+  const [tours, categories, destinations] = await Promise.all([
+    getPublishedTours(),
+    getActiveCategories(),
+    getActiveDestinations(),
+  ]);
+
   return (
     <div className="min-h-screen bg-background">
       <Suspense fallback={<ToursPageSkeleton />}>
-        <ToursContent />
+        <ToursContent initialTours={tours} categories={categories} destinations={destinations} />
       </Suspense>
     </div>
   );

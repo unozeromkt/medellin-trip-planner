@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { wholesalePackages, type WholesalePackage } from "@/lib/wholesale-packages";
+import type { WholesalePackage } from "@/lib/wholesale-packages";
 
 const TABS = ["Todos", "2-3 días", "4-5 días", "Premium"] as const;
 type TabKey = (typeof TABS)[number];
@@ -30,11 +30,9 @@ function PackageCard({ pkg }: { pkg: WholesalePackage }) {
           : "border border-[#E9EEF4] hover:border-[#2BB7A6]/30"
       }`}
     >
-      {/* Card top accent */}
       <div className="h-1.5 bg-gradient-to-r from-[#2BB7A6] to-[#A8CBE6]" />
 
       <div className="p-5 flex flex-col flex-1">
-        {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex flex-wrap gap-1.5">
             <Badge className="bg-[#0D1B3D]/8 text-[#0D1B3D] text-xs rounded-lg border-0 font-body font-medium px-2 py-0.5">
@@ -52,12 +50,10 @@ function PackageCard({ pkg }: { pkg: WholesalePackage }) {
           </div>
         </div>
 
-        {/* Name */}
         <h3 className="font-heading text-lg font-bold text-[#0D1B3D] mb-3 leading-snug">
           {pkg.name}
         </h3>
 
-        {/* Meta */}
         <div className="flex items-center gap-3 mb-3 text-xs text-[#637489] font-body">
           <div className="flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5 text-[#2BB7A6]" />
@@ -69,7 +65,6 @@ function PackageCard({ pkg }: { pkg: WholesalePackage }) {
           </div>
         </div>
 
-        {/* Experiences */}
         <ul className="space-y-1.5 mb-4 flex-1">
           {pkg.experiences.slice(0, 4).map((exp) => (
             <li key={exp} className="flex items-start gap-2 text-sm text-[#637489] font-body">
@@ -79,7 +74,6 @@ function PackageCard({ pkg }: { pkg: WholesalePackage }) {
           ))}
         </ul>
 
-        {/* Pricing */}
         <div className="border-t border-[#E9EEF4] pt-4 mt-auto">
           <div className="flex items-end justify-between gap-3 mb-3">
             <div>
@@ -111,14 +105,17 @@ function PackageCard({ pkg }: { pkg: WholesalePackage }) {
   );
 }
 
-export function WholesalePackages() {
+interface WholesalePackagesProps {
+  packages: WholesalePackage[];
+}
+
+export function WholesalePackages({ packages }: WholesalePackagesProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("Todos");
-  const filtered = filterPackages(wholesalePackages, activeTab);
+  const filtered = filterPackages(packages, activeTab);
 
   return (
     <section id="catalogo" className="bg-[#F1F3F6] py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="text-center mb-10">
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -150,7 +147,6 @@ export function WholesalePackages() {
           </motion.p>
         </div>
 
-        {/* Tabs */}
         <div className="flex justify-center mb-8">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabKey)}>
             <TabsList className="bg-white border border-[#E9EEF4] rounded-xl p-1 h-auto gap-1">
@@ -167,7 +163,6 @@ export function WholesalePackages() {
           </Tabs>
         </div>
 
-        {/* Package grid */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -183,17 +178,19 @@ export function WholesalePackages() {
           </motion.div>
         </AnimatePresence>
 
-        {/* CTA below */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.35, delay: 0.2 }}
-          className="text-center mt-12"
+          className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <p className="font-body text-[#637489] mb-4">
-            ¿Necesitas un paquete a medida para tu segmento?
-          </p>
+          <Link
+            href="/paquetes"
+            className={cn(buttonVariants(), "bg-[#0D1B3D] hover:bg-[#0D1B3D]/90 text-white rounded-xl px-8 h-11 font-semibold transition-colors")}
+          >
+            Ver catálogo completo →
+          </Link>
           <a
             href="#registro"
             className={cn(buttonVariants({ variant: "outline" }), "border-[#0D1B3D] text-[#0D1B3D] hover:bg-[#0D1B3D] hover:text-white rounded-xl px-8 h-11 font-semibold transition-colors")}

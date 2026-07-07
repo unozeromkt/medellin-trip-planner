@@ -84,6 +84,8 @@ model Destination {
   description String?
   coverImage  String?
   region      String?
+  rating      Float    @default(0)
+  reviewCount Int      @default(0)
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
@@ -145,15 +147,23 @@ model Tour {
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
+  coverImage        String?
+  rating            Float      @default(0)
+  reviewCount       Int        @default(0)
+  videoUrl          String?
+  priceChild        Float?
+  duration          String?
+
   // ── AI trip planner fields ──────────────────────────────────
-  departureTimes   String[]                   // ["07:00", "14:00"]
-  returnTime       String?                    // "17:30"
-  isFullDay        Boolean    @default(false)
-  zone             String?                    // norte | centro | sur | oriente | fuera-medellin
-  physicalIntensity String?                   // low | medium | high
-  pickupIncluded   Boolean    @default(false)
-  bookingAdvanceDays Int?                     // minimum days in advance
-  tags             String[]                   // ["mañana", "familiar", "romántico"]
+  departureTimes    String[]
+  returnTime        String?
+  isFullDay         Boolean    @default(false)
+  zone              String?
+  physicalIntensity String?
+  operatingDays     Int[]
+  pickupIncluded    Boolean    @default(false)
+  bookingAdvanceDays Int?
+  tags              String[]
 
   operator       Operator            @relation(fields: [operatorId], references: [id])
   destination    Destination         @relation(fields: [destinationId], references: [id])
@@ -291,20 +301,32 @@ enum AgencyStatus {
   suspended
 }
 
-model Agency {
-  id          String       @id @default(cuid())
-  name        String
-  contactName String?
-  email       String       @unique
-  phone       String?
-  country     String?
-  city        String?
-  status      AgencyStatus @default(pending)
-  notes       String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+enum AgencyLevel {
+  bronze
+  silver
+  gold
+  platinum
+}
 
-  users User[]
+model Agency {
+  id            String       @id @default(cuid())
+  name          String
+  contactName   String?
+  email         String       @unique
+  phone         String?
+  country       String?
+  city          String?
+  websiteUrl    String?
+  taxId         String?
+  status        AgencyStatus @default(pending)
+  level         AgencyLevel  @default(bronze)
+  commissionPct Float        @default(18)
+  notes         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  users        User[]
+  reservations PackageReservation[]
 }
 
 // ─────────────────────────────────────────────
@@ -348,4 +370,71 @@ model Offer {
   isActive    Boolean   @default(true)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Wholesale / B2B Packages
+// ─────────────────────────────────────────────
+
+model WholesalePackage {
+  id                String   @id @default(cuid())
+  slug              String   @unique
+  name              String
+  duration          String
+  durationDays      Int
+  category          String
+  destinations      String[]
+  operatorCount     Int
+  experiences       String[]
+  netRate           Float
+  commission        Float
+  minPax            Int
+  maxPax            Int
+  highlight         Boolean  @default(false)
+  badge             String?
+  coverImage        String?
+  audiences         String[]
+  description       String
+  itinerary         Json
+  included          String[]
+  excluded          String[]
+  paxPricing        Json
+  operatorBreakdown Json
+  cancelPolicy      String
+  isActive          Boolean  @default(true)
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  reservations PackageReservation[]
+}
+
+// ─────────────────────────────────────────────
+// Agency Package Reservations
+// ─────────────────────────────────────────────
+
+enum ReservationStatus {
+  pending
+  confirmed
+  cancelled
+  completed
+}
+
+model PackageReservation {
+  id           String            @id @default(cuid())
+  agencyId     String
+  packageId    String
+  status       ReservationStatus @default(pending)
+  travelDate   DateTime
+  paxCount     Int
+  contactName  String
+  contactPhone String?
+  message      String?
+  totalNet     Float?
+  adminNotes   String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  agency  Agency           @relation(fields: [agencyId], references: [id])
+  package WholesalePackage @relation(fields: [packageId], references: [id])
 }

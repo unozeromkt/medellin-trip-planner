@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Phone, ArrowRight } from "lucide-react";
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "573001234567";
@@ -41,12 +42,12 @@ export function WhatsAppCTABanner() {
               Escribir por WhatsApp
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </a>
-            <a
+            <Link
               href="/tours"
               className="inline-flex items-center gap-2 text-white/70 hover:text-white font-medium px-6 py-3.5 rounded-full border border-white/20 hover:border-white/40 transition-colors"
             >
               Explorar tours
-            </a>
+            </Link>
           </div>
 
           <p className="mt-6 text-xs text-white/30">

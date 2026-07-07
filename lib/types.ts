@@ -27,6 +27,8 @@ export type Destination = {
   description?: string | null;
   coverImage?: string | null;
   region?: string | null;
+  rating?: number | null;
+  reviewCount?: number | null;
 };
 
 export type Operator = {
@@ -57,19 +59,19 @@ export type TourSummary = {
   /** Times the tour departs (24h format, e.g. "07:00"). */
   departureTimes?: string[];
   /** Estimated time back at meeting point / hotel (24h). */
-  returnTime?: string;
+  returnTime?: string | null;
   /** True when the tour occupies the whole day (≥ 6h or mandatory full-day). */
   isFullDay?: boolean;
   /** Geographic zone — used to group nearby tours on the same day. */
-  zone?: TourZone;
+  zone?: TourZone | null;
   /** Physical effort level. */
-  physicalIntensity?: PhysicalIntensity;
+  physicalIntensity?: PhysicalIntensity | null;
   /** ISO weekdays on which the tour operates: 1 = Mon … 7 = Sun. */
   operatingDays?: number[];
   /** True if hotel/accommodation pickup is included. */
   pickupIncluded?: boolean;
   /** Minimum days in advance the tour must be booked. */
-  bookingAdvanceDays?: number;
+  bookingAdvanceDays?: number | null;
   /**
    * Free-form planning tags used by the AI assistant.
    * Examples: "mañana" | "tarde" | "noche" | "familiar" | "romántico"
@@ -77,6 +79,30 @@ export type TourSummary = {
    *           | "premium" | "privado" | "grupal" | "día-completo"
    */
   tags?: string[];
+};
+
+export type TourInitialData = {
+  id: string;
+  title: string;
+  slug: string;
+  shortDescription: string | null;
+  description: string | null;
+  coverImage: string | null;
+  videoUrl: string | null;
+  priceFrom: number | null;
+  priceChild: number | null;
+  duration: string | null;
+  destinationId: string;
+  operatorId: string;
+  status: "draft" | "pending_review" | "approved" | "published" | "rejected" | "archived";
+  isFeatured: boolean;
+  includes: string[];
+  excludes: string[];
+  tourCategories: { categoryId: string }[];
+  images: { url: string; sortOrder: number }[];
+  itinerary: { title: string; description: string | null; stepNumber: number }[];
+  faqs: { question: string; answer: string }[];
+  reviews: { authorName: string; rating: number; comment: string | null }[];
 };
 
 export type TourDetail = TourSummary & {

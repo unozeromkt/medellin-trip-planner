@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ExperienceBuilderPage } from "./ExperienceBuilderPage";
+import { getPublishedTours, getActiveCategories } from "@/lib/queries";
 
 export const metadata: Metadata = {
   title: "Constructor de Experiencias",
@@ -7,6 +8,11 @@ export const metadata: Metadata = {
     "Combina múltiples tours y crea tu experiencia perfecta en Medellín y Antioquia. Planifica, personaliza y solicita por WhatsApp.",
 };
 
-export default function Page() {
-  return <ExperienceBuilderPage />;
+export default async function Page() {
+  const [tours, categories] = await Promise.all([
+    getPublishedTours(),
+    getActiveCategories(),
+  ]);
+
+  return <ExperienceBuilderPage tours={tours} categories={categories} />;
 }

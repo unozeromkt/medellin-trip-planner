@@ -10,6 +10,10 @@ function createPrismaClient() {
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
+    // Supabase's session-mode pooler caps this project at 15 total clients;
+    // node-postgres defaults to 10 per Pool, which alone can exhaust it
+    // across concurrent build workers / serverless instances.
+    max: 3,
   });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({

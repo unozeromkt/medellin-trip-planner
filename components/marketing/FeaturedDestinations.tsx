@@ -6,14 +6,6 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { ArrowRight, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Destination } from "@/lib/types";
 
-const destinationRatings: Record<string, number> = {
-  medellin: 4.8,
-  guatape: 4.9,
-  "santa-fe-de-antioquia": 4.5,
-  "oriente-antioqueno": 4.7,
-  doradal: 4.6,
-  jardin: 4.8,
-};
 
 interface FeaturedDestinationsProps {
   destinations: Destination[];
@@ -184,7 +176,7 @@ export function FeaturedDestinations({ destinations }: FeaturedDestinationsProps
                 <div className="flex items-center gap-1 bg-white/15 backdrop-blur-sm rounded-full px-2.5 py-1">
                   <Star className="h-3 w-3 text-[#FFC97A] fill-[#FFC97A]" />
                   <span className="text-xs font-semibold text-white">
-                    {destinationRatings[dest.slug] ?? 4.7}
+                    {dest.rating?.toFixed(1) ?? "4.7"}
                   </span>
                 </div>
               </div>

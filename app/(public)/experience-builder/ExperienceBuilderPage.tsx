@@ -7,15 +7,21 @@ import { TourCard } from "@/components/tours/TourCard";
 import { BuilderSummary } from "@/components/builder/BuilderSummary";
 import { LeadFormSheet } from "@/components/builder/LeadFormSheet";
 import { useExperienceBuilder } from "@/lib/experience-builder-context";
-import { mockTours, mockCategories, formatPrice } from "@/lib/mock-data";
+import { formatPrice } from "@/lib/mock-data";
+import type { TourSummary, Category } from "@/lib/types";
 
-export function ExperienceBuilderPage() {
+interface ExperienceBuilderPageProps {
+  tours: TourSummary[];
+  categories: Category[];
+}
+
+export function ExperienceBuilderPage({ tours, categories }: ExperienceBuilderPageProps) {
   const { selectedTours, totalPrice } = useExperienceBuilder();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
 
-  const filtered = mockTours.filter((t) => {
+  const filtered = tours.filter((t) => {
     if (activeCategory && !t.categories.some((c) => c.slug === activeCategory)) return false;
     if (!search) return true;
     const q = search.toLowerCase();
@@ -29,7 +35,6 @@ export function ExperienceBuilderPage() {
   return (
     <>
       <div className="min-h-screen bg-background">
-        {/* Page header */}
         <div className="bg-[#0D1B3D] text-white py-10">
           <div className="container mx-auto px-4">
             <div className="flex items-center gap-3 mb-2">
@@ -49,9 +54,7 @@ export function ExperienceBuilderPage() {
 
         <div className="container mx-auto px-4 py-8">
           <div className="flex gap-8 items-start">
-            {/* ── Left: Tour browser ── */}
             <div className="flex-1 min-w-0">
-              {/* Search */}
               <div className="mb-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -64,7 +67,6 @@ export function ExperienceBuilderPage() {
                 </div>
               </div>
 
-              {/* Category pills — local state, no URL navigation */}
               <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-5 scrollbar-none -mx-1 px-1">
                 <button
                   onClick={() => setActiveCategory(null)}
@@ -76,7 +78,7 @@ export function ExperienceBuilderPage() {
                 >
                   Todos
                 </button>
-                {mockCategories.map((cat) => (
+                {categories.map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() =>
@@ -93,13 +95,11 @@ export function ExperienceBuilderPage() {
                 ))}
               </div>
 
-              {/* Count */}
               <p className="text-sm text-muted-foreground mb-4">
                 <span className="font-medium text-foreground">{filtered.length}</span> experiencia
                 {filtered.length !== 1 ? "s" : ""} disponible{filtered.length !== 1 ? "s" : ""}
               </p>
 
-              {/* Tour grid */}
               {filtered.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {filtered.map((tour) => (
@@ -115,7 +115,6 @@ export function ExperienceBuilderPage() {
               )}
             </div>
 
-            {/* ── Right: Summary panel (desktop) ── */}
             <div className="hidden lg:block w-80 shrink-0">
               <div className="sticky top-24">
                 <BuilderSummary onContinue={() => setFormOpen(true)} />
@@ -125,7 +124,6 @@ export function ExperienceBuilderPage() {
         </div>
       </div>
 
-      {/* Mobile floating bar */}
       {selectedTours.length > 0 && (
         <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-border/50 px-4 py-3 z-40">
           <div className="flex items-center justify-between gap-3">
