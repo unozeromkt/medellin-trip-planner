@@ -103,7 +103,7 @@ export function HeroSearch({ destinations, categories }: HeroSearchProps) {
   today.setHours(0, 0, 0, 0);
 
   return (
-    <section className="relative min-h-[78vh] flex items-center overflow-hidden">
+    <section className="relative min-h-[78vh] flex items-center overflow-x-hidden">
       <Image
         src="/img/guatape-sky.jpg"
         alt="Embalse de Guatapé, Colombia"
@@ -189,7 +189,7 @@ export function HeroSearch({ destinations, categories }: HeroSearchProps) {
                 </div>
 
                 {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-xl shadow-xl z-50 overflow-hidden">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto">
                     {suggestions.map((dest) => (
                       <button
                         key={dest.id}

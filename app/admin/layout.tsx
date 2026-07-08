@@ -15,6 +15,7 @@ import {
   Plus,
   Building2,
   CalendarDays,
+  MapPin,
 } from "lucide-react";
 
 export default async function AdminLayout({
@@ -77,6 +78,7 @@ export default async function AdminLayout({
           {[
             { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
             { label: "Tours", href: "/admin/tours", icon: Map },
+            { label: "Destinos", href: "/admin/destinos", icon: MapPin },
             { label: "Paquetes mayoristas", href: "/admin/paquetes", icon: Package },
             { label: "Reservas", href: "/admin/reservas", icon: CalendarDays, badge: pendingReservations },
             { label: "Leads", href: "/admin/leads", icon: MessageSquare },
