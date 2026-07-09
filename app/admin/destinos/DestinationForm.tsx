@@ -193,7 +193,7 @@ export function DestinationForm({ serverAction, initialData, cancelHref }: Desti
               <span className="text-sm font-body">
                 {uploading ? "Comprimiendo y subiendo..." : "Haz clic o arrastra una imagen"}
               </span>
-              <span className="text-xs">JPG, PNG, WebP · Máx 10MB · Se comprime automáticamente</span>
+              <span className="text-xs">JPG, PNG, WebP · Máx 15MB · Se comprime automáticamente</span>
             </button>
           )}
           <input
