@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { db } from "@/lib/db";
 import { PackageForm } from "./PackageForm";
 
 export const metadata: Metadata = { title: "Nuevo paquete mayorista | Admin" };
 
-export default function NuevoPaquetePage() {
+export default async function NuevoPaquetePage() {
+  const destinations = await db.destination.findMany({
+    where: { isActive: true },
+    orderBy: { name: "asc" },
+    select: { name: true },
+  });
+  const destinationOptions = destinations.map((d) => d.name);
+
   return (
     <div className="max-w-4xl space-y-6">
       <div>
@@ -17,7 +25,7 @@ export default function NuevoPaquetePage() {
           Completa la información. Las agencias activas podrán verlo y solicitar reservas.
         </p>
       </div>
-      <PackageForm />
+      <PackageForm destinationOptions={destinationOptions} />
     </div>
   );
 }

@@ -14,8 +14,12 @@ export default async function EditPackagePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const pkg = await db.wholesalePackage.findUnique({ where: { id } });
+  const [pkg, destinationRows] = await Promise.all([
+    db.wholesalePackage.findUnique({ where: { id } }),
+    db.destination.findMany({ where: { isActive: true }, orderBy: { name: "asc" }, select: { name: true } }),
+  ]);
   if (!pkg) notFound();
+  const destinationOptions = destinationRows.map((d) => d.name);
 
   const itinerary = (pkg.itinerary as ItineraryDay[]) ?? [];
   const paxPricing = (pkg.paxPricing as PaxPricing[]) ?? [];
@@ -27,7 +31,7 @@ export default async function EditPackagePage({
     duration: pkg.duration,
     durationDays: pkg.durationDays,
     category: pkg.category,
-    destinations: pkg.destinations.join("\n"),
+    destinations: pkg.destinations,
     netRate: pkg.netRate,
     commission: pkg.commission,
     minPax: pkg.minPax,
@@ -76,7 +80,7 @@ export default async function EditPackagePage({
         </p>
       </div>
 
-      <EditPackageForm packageId={id} defaults={defaults} />
+      <EditPackageForm packageId={id} defaults={defaults} destinationOptions={destinationOptions} />
     </div>
   );
 }

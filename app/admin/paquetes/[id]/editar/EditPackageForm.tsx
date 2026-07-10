@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Plus, Trash2, Loader2, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
 import { updatePackage } from "../../actions";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 const schema = z.object({
   name: z.string().min(2, "Mínimo 2 caracteres"),
@@ -14,7 +15,7 @@ const schema = z.object({
   duration: z.string().min(1, "Requerido"),
   durationDays: z.coerce.number().min(1),
   category: z.string().min(1, "Requerido"),
-  destinations: z.string().min(1, "Al menos un destino"),
+  destinations: z.array(z.string()).min(1, "Al menos un destino"),
   netRate: z.coerce.number().min(0),
   commission: z.coerce.number().min(0).max(100),
   minPax: z.coerce.number().min(1),
@@ -52,7 +53,7 @@ type FormValues = z.infer<typeof schema>;
 
 type Defaults = {
   name: string; slug: string; duration: string; durationDays: number;
-  category: string; destinations: string; netRate: number; commission: number;
+  category: string; destinations: string[]; netRate: number; commission: number;
   minPax: number; maxPax: number; highlight: boolean; badge: string;
   coverImage: string; audiences: string[];
   description: string; operatorCount: number; experiences: string;
@@ -90,7 +91,78 @@ function Section({ title, children, defaultOpen = true }: { title: string; child
   );
 }
 
-export function EditPackageForm({ packageId, defaults }: { packageId: string; defaults: Defaults }) {
+function DestinationPicker({
+  options,
+  value,
+  onChange,
+}: {
+  options: string[];
+  value: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const [customInput, setCustomInput] = useState("");
+  const extras = value.filter((d) => !options.includes(d));
+
+  function toggle(name: string) {
+    onChange(value.includes(name) ? value.filter((d) => d !== name) : [...value, name]);
+  }
+
+  function addCustom() {
+    const name = customInput.trim();
+    if (name && !value.includes(name)) onChange([...value, name]);
+    setCustomInput("");
+  }
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2 mb-2">
+        {[...options, ...extras].map((name) => {
+          const checked = value.includes(name);
+          return (
+            <label
+              key={name}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-body font-semibold cursor-pointer transition-colors ${checked ? "bg-[#2BB7A6] border-[#2BB7A6] text-white" : "bg-white border-[#E2E8ED] text-[#637489] hover:border-[#2BB7A6]"}`}
+            >
+              <input type="checkbox" className="sr-only" checked={checked} onChange={() => toggle(name)} />
+              {name}
+            </label>
+          );
+        })}
+      </div>
+      <div className="flex gap-2">
+        <input
+          value={customInput}
+          onChange={(e) => setCustomInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addCustom();
+            }
+          }}
+          placeholder="Otro destino (no listado)…"
+          className={inputClass}
+        />
+        <button
+          type="button"
+          onClick={addCustom}
+          className="shrink-0 px-3 rounded-xl border border-[#E2E8ED] text-[#637489] hover:border-[#2BB7A6] hover:text-[#2BB7A6] transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function EditPackageForm({
+  packageId,
+  defaults,
+  destinationOptions,
+}: {
+  packageId: string;
+  defaults: Defaults;
+  destinationOptions: string[];
+}) {
   const router = useRouter();
   const [serverState, setServerState] = useState<{ error?: string; success?: boolean; slug?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -123,10 +195,11 @@ export function EditPackageForm({ packageId, defaults }: { packageId: string; de
     setIsSubmitting(true);
     const fd = new FormData();
 
-    const scalars = ["name", "slug", "duration", "durationDays", "category", "destinations",
+    const scalars = ["name", "slug", "duration", "durationDays", "category",
       "netRate", "commission", "minPax", "maxPax", "badge", "description",
       "operatorCount", "experiences", "included", "excluded", "cancelPolicy", "sortOrder"] as const;
     scalars.forEach((k) => fd.set(k, String(values[k] ?? "")));
+    fd.set("destinations", values.destinations.join("\n"));
     fd.set("highlight", values.highlight ? "true" : "false");
     fd.set("isActive", values.isActive ? "true" : "false");
     fd.set("coverImage", values.coverImage ?? "");
@@ -184,9 +257,12 @@ export function EditPackageForm({ packageId, defaults }: { packageId: string; de
         <Field label="Badge (opcional)" error={errors.badge?.message}>
           <input {...register("badge")} placeholder="Nuevo, Exclusivo, Top ventas…" className={inputClass} />
         </Field>
-        <Field label="Imagen destacada (URL)" error={errors.coverImage?.message} hint="URL de imagen 800×480px aprox.">
-          <input {...register("coverImage")} type="url" placeholder="https://..." className={inputClass} />
-        </Field>
+        <ImageUpload
+          label="Imagen destacada"
+          hint="Recomendado 800×480px aprox."
+          value={watch("coverImage") ?? ""}
+          onChange={(url) => setValue("coverImage", url)}
+        />
         <div>
           <p className="text-sm font-semibold text-[#0D1B3D] font-body mb-2">Audiencias</p>
           <div className="flex flex-wrap gap-2">
@@ -263,8 +339,12 @@ export function EditPackageForm({ packageId, defaults }: { packageId: string; de
       </Section>
 
       <Section title="Destinos y operadores">
-        <Field label="Destinos *" error={errors.destinations?.message} hint="Un destino por línea">
-          <textarea {...register("destinations")} rows={3} className={textareaClass} />
+        <Field label="Destinos *" error={errors.destinations?.message} hint="Selecciona del catálogo o añade uno nuevo">
+          <DestinationPicker
+            options={destinationOptions}
+            value={watch("destinations") ?? []}
+            onChange={(next) => setValue("destinations", next, { shouldValidate: true })}
+          />
         </Field>
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label="Nº de operadores" error={errors.operatorCount?.message}>
