@@ -205,7 +205,7 @@ export default async function AgencyDetailPage({
               </div>
             ) : (
               <ul className="space-y-2.5">
-                {agency.users.map((u) => (
+                {agency.users.map((u: (typeof agency.users)[number]) => (
                   <li key={u.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-[#F8FAFC]">
                     <div className="w-7 h-7 rounded-full bg-[#2BB7A6]/15 flex items-center justify-center shrink-0">
                       <span className="text-[#2BB7A6] text-[11px] font-bold uppercase">
