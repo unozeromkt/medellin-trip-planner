@@ -146,7 +146,7 @@ export function HeroSearch({ destinations, categories }: HeroSearchProps) {
           className="text-base sm:text-lg text-white/90 mb-10 max-w-lg leading-relaxed"
           style={{ textShadow: "0 1px 8px rgba(0,0,0,0.3)" }}
         >
-          Experiencias curadas, operadores verificados y planificación inteligente para tu próximo viaje.
+          Experiencias únicas con operadores verificados y planificación inteligente para tu próximo viaje.
         </motion.p>
 
         <motion.form

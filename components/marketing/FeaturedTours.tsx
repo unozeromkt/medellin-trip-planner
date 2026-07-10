@@ -78,7 +78,7 @@ export function FeaturedTours({ tours }: FeaturedToursProps) {
             Tours recomendados
           </span>
           <h2 className="font-heading text-4xl md:text-5xl font-bold text-[#0D1B3D] mb-4 leading-tight">
-            ¿Qué te gutaría vivir hoy?
+            ¿Qué te gustaría vivir hoy?
           </h2>
           <p className="text-muted-foreground max-w-md mx-auto text-sm leading-relaxed">
             Explora lo mejor de Medellín y Antioquia, curado por expertos locales.

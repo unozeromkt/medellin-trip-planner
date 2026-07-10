@@ -151,10 +151,6 @@ export function FeaturedCollections() {
         {/* Section header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
           <div>
-            <div className="inline-flex items-center gap-2 bg-[#2BB7A6]/10 text-[#2BB7A6] rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest mb-4">
-              <Sparkles className="h-3.5 w-3.5" />
-              Colecciones curadas
-            </div>
             <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground leading-tight">
               Experiencias para{" "}
               <span className="relative inline-block">
@@ -166,7 +162,7 @@ export function FeaturedCollections() {
               </span>
             </h2>
             <p className="mt-4 text-muted-foreground max-w-md leading-relaxed">
-              Colecciones temáticas operadas por los mejores operadores de Medellín y Antioquia.
+              Experiencias temáticas ofrecidas por los mejores operadores de Medellín y Antioquia.
             </p>
           </div>
 
