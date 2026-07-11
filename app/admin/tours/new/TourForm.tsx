@@ -176,17 +176,20 @@ function GalleryUpload({
       setUploading(true);
       setError("");
       try {
-        const newUrls = await Promise.all(
-          selected.map(async (file) => {
-            const compressed = await imageCompression(file, COMPRESSION_OPTIONS);
-            const fd = new FormData();
-            fd.append("file", compressed, file.name);
-            const res = await fetch("/api/upload", { method: "POST", body: fd });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error ?? "Error");
-            return data.url as string;
-          })
-        );
+        // Uploaded one at a time (not Promise.all): parallel requests each
+        // trigger their own Supabase auth check, and concurrent token
+        // refreshes race to rotate the same refresh token — the loser gets
+        // its session invalidated mid-upload.
+        const newUrls: string[] = [];
+        for (const file of selected) {
+          const compressed = await imageCompression(file, COMPRESSION_OPTIONS);
+          const fd = new FormData();
+          fd.append("file", compressed, file.name);
+          const res = await fetch("/api/upload", { method: "POST", body: fd });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error ?? "Error");
+          newUrls.push(data.url as string);
+        }
         onChange([...urls, ...newUrls]);
       } catch (e: unknown) {
         setError(e instanceof Error ? e.message : "Error al subir imágenes");
