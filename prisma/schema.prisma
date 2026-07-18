@@ -421,19 +421,22 @@ enum ReservationStatus {
 }
 
 model PackageReservation {
-  id           String            @id @default(cuid())
-  agencyId     String
-  packageId    String
-  status       ReservationStatus @default(pending)
-  travelDate   DateTime
-  paxCount     Int
-  contactName  String
-  contactPhone String?
-  message      String?
-  totalNet     Float?
-  adminNotes   String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id             String            @id @default(cuid())
+  agencyId       String
+  packageId      String
+  status         ReservationStatus @default(pending)
+  travelDate     DateTime
+  paxCount       Int
+  contactName    String
+  contactPhone   String?
+  contactEmail   String?
+  passengerName  String?
+  groupLanguage  String?
+  message        String?
+  totalNet       Float?
+  adminNotes     String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
   agency  Agency           @relation(fields: [agencyId], references: [id])
   package WholesalePackage @relation(fields: [packageId], references: [id])

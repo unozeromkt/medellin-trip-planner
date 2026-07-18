@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { AgencyHero } from "@/components/agency/AgencyHero";
-import { AgencyLoginBanner } from "@/components/agency/AgencyLoginBanner";
 import { PartnerBrands } from "@/components/agency/PartnerBrands";
 import { WholesalePackages } from "@/components/agency/WholesalePackages";
 import { AgencyDestinations } from "@/components/agency/AgencyDestinations";
@@ -26,7 +25,6 @@ export default async function AgenciasPage() {
 
   return (
     <>
-      <AgencyLoginBanner />
       <AgencyHero />
       <PartnerBrands />
       <WholesalePackages packages={packages} />

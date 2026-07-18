@@ -187,6 +187,27 @@ export async function getRelatedWholesalePackages(
   return rows.map(mapPackage);
 }
 
+export async function getTopSellingWholesalePackages(
+  limit = 5
+): Promise<(WholesalePackage & { reservationCount: number })[]> {
+  const grouped = await db.packageReservation.groupBy({
+    by: ["packageId"],
+    _count: { packageId: true },
+    orderBy: { _count: { packageId: "desc" } },
+    take: limit,
+  });
+  if (grouped.length === 0) return [];
+
+  const countMap = new Map(grouped.map((g) => [g.packageId, g._count.packageId]));
+  const rows = await db.wholesalePackage.findMany({
+    where: { id: { in: [...countMap.keys()] }, isActive: true },
+  });
+
+  return rows
+    .map((raw) => ({ ...mapPackage(raw), reservationCount: countMap.get(raw.id) ?? 0 }))
+    .sort((a, b) => b.reservationCount - a.reservationCount);
+}
+
 export async function getSiteStats(): Promise<{
   tours: number;
   operators: number;

@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "motion/react";
-import { ArrowRight, Building2, Shield } from "lucide-react";
+import { Building2, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -15,6 +16,16 @@ const stats = [
 export function AgencyHero() {
   return (
     <section className="relative bg-[#0D1B3D] overflow-hidden">
+      {/* Background image */}
+      <Image
+        src="/img/hero-agencies.jpg"
+        alt=""
+        fill
+        priority
+        className="object-cover"
+      />
+      {/* Dark overlay for legibility */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0D1B3D] via-[#0D1B3D]/90 to-[#0D1B3D]/60" />
       {/* Dot grid */}
       <div
         className="absolute inset-0 opacity-[0.04]"
@@ -75,15 +86,8 @@ export function AgencyHero() {
             className="flex flex-col sm:flex-row gap-3"
           >
             <a
-              href="#catalogo"
-              className={cn(buttonVariants(), "flex items-center gap-2 bg-[#2BB7A6] hover:bg-[#2BB7A6]/90 text-white font-semibold px-8 h-12 text-base rounded-xl shadow-lg shadow-[#2BB7A6]/20")}
-            >
-              Ver catálogo mayorista
-              <ArrowRight className="w-5 h-5" />
-            </a>
-            <a
               href="#registro"
-              className={cn(buttonVariants({ variant: "outline" }), "flex items-center gap-2 border-white/20 text-[#F1F3F6] hover:bg-white/10 hover:border-white/30 px-8 h-12 text-base rounded-xl bg-transparent")}
+              className={cn(buttonVariants(), "flex items-center gap-2 bg-[#2BB7A6] hover:bg-[#2BB7A6]/90 text-white font-semibold px-8 h-12 text-base rounded-xl shadow-lg shadow-[#2BB7A6]/20")}
             >
               <Building2 className="w-5 h-5" />
               Registrar mi agencia

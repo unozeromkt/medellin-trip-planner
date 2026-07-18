@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUserProfile } from "@/lib/auth";
 import { getWholesalePackageBySlug } from "@/lib/queries";
+import { formatCOP } from "@/lib/utils";
 import { ReserveForm } from "./ReserveForm";
 import {
   ArrowLeft, MapPin, Clock, Users, CheckCircle, XCircle,
@@ -133,17 +134,17 @@ export default async function AgencyPackageDetailPage({
         <div className="lg:col-span-2 lg:sticky lg:top-6 space-y-4">
           {/* Price summary */}
           <div className="bg-[#0D1B3D] rounded-2xl p-5 text-white">
-            <p className="font-body text-xs text-white/50 uppercase tracking-wide mb-1">Tarifa neta desde</p>
+            <p className="font-body text-xs text-white/50 uppercase tracking-wide mb-1">{pkg.name}</p>
             <p className="font-heading text-3xl font-bold text-[#2BB7A6]">
-              ${pkg.netRate.toLocaleString("es-CO")}
-              <span className="text-sm font-body font-normal text-white/40 ml-1">COP/pax</span>
+              {formatCOP(pkg.netRate)}
+              <span className="text-sm font-body font-normal text-white/40 ml-1">por persona</span>
             </p>
             <p className="font-body text-sm text-white/60 mt-1">
               Comisión para tu agencia: <span className="text-white font-semibold">{pkg.commission}%</span>
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-[#E2E8ED] p-5">
+          <div id="reservar" className="bg-white rounded-2xl border border-[#E2E8ED] p-5 scroll-mt-6">
             <h2 className="font-heading text-base font-bold text-[#0D1B3D] mb-1">Solicitar reserva</h2>
             <p className="font-body text-xs text-[#637489] mb-5">
               Tu solicitud será revisada y confirmada en 24–48 h.

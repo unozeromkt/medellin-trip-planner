@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X, ExternalLink } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -48,18 +48,12 @@ export function AgencyNavbar() {
           {/* Desktop CTAs */}
           <div className="hidden md:flex items-center gap-4">
             <Link
-              href="/"
-              className="font-body text-[#A8CBE6] hover:text-white text-xs flex items-center gap-1.5 transition-colors"
+              href="/login"
+              className={cn(buttonVariants(), "flex items-center gap-1.5 bg-[#2BB7A6] hover:bg-[#2BB7A6]/90 text-white text-sm px-5 h-9 rounded-xl font-semibold shadow-md shadow-[#2BB7A6]/20")}
             >
-              <ExternalLink className="w-3 h-3" />
-              Portal público
+              <LogIn className="w-3.5 h-3.5" />
+              Iniciar sesión
             </Link>
-            <a
-              href="#registro"
-              className={cn(buttonVariants(), "bg-[#2BB7A6] hover:bg-[#2BB7A6]/90 text-white text-sm px-5 h-9 rounded-xl font-semibold shadow-md shadow-[#2BB7A6]/20")}
-            >
-              Acceso de Agencia
-            </a>
           </div>
 
           {/* Mobile toggle */}
@@ -87,19 +81,13 @@ export function AgencyNavbar() {
             </a>
           ))}
           <div className="pt-3 space-y-2 border-t border-white/10 mt-2">
-            <a
-              href="#registro"
-              onClick={() => setMobileOpen(false)}
-              className={cn(buttonVariants(), "w-full bg-[#2BB7A6] hover:bg-[#2BB7A6]/90 text-white font-semibold rounded-xl h-11")}
-            >
-              Acceso de Agencia
-            </a>
             <Link
-              href="/"
-              className="flex items-center justify-center gap-1.5 text-[#A8CBE6] text-sm py-1"
+              href="/login"
+              onClick={() => setMobileOpen(false)}
+              className={cn(buttonVariants(), "w-full flex items-center justify-center gap-1.5 bg-[#2BB7A6] hover:bg-[#2BB7A6]/90 text-white font-semibold rounded-xl h-11")}
             >
-              <ExternalLink className="w-3 h-3" />
-              Ver portal público
+              <LogIn className="w-4 h-4" />
+              Iniciar sesión
             </Link>
           </div>
         </div>
