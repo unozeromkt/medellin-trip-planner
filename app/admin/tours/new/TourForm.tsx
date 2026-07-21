@@ -6,6 +6,7 @@ import type { CreateTourState } from "@/app/admin/tours/actions";
 import { Plus, X, Upload, Loader2, Star } from "lucide-react";
 import type { Destination, Category, TourInitialData } from "@/lib/types";
 import type { Operator } from "@prisma/client";
+import { extractYouTubeId } from "@/lib/youtube";
 
 type TourAction = (prevState: CreateTourState, formData: FormData) => Promise<CreateTourState>;
 
@@ -37,13 +38,6 @@ function slugify(text: string) {
     .trim()
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
-}
-
-function extractYouTubeId(url: string): string | null {
-  const match = url.match(
-    /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([^&?\s/]+)/
-  );
-  return match ? match[1] : null;
 }
 
 function FieldError({ errors, name }: { errors?: Record<string, string[]>; name: string }) {

@@ -6,7 +6,8 @@ import { X, Clock, Layers, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useExperienceBuilder } from "@/lib/experience-builder-context";
-import { formatPrice, formatDuration } from "@/lib/mock-data";
+import { useCurrency } from "@/lib/currency-context";
+import { formatDuration } from "@/lib/mock-data";
 
 interface BuilderSummaryProps {
   onContinue: () => void;
@@ -15,6 +16,7 @@ interface BuilderSummaryProps {
 export function BuilderSummary({ onContinue }: BuilderSummaryProps) {
   const { selectedTours, removeTour, clearAll, totalPrice, totalDurationMinutes } =
     useExperienceBuilder();
+  const { formatPrice } = useCurrency();
 
   if (selectedTours.length === 0) {
     return (

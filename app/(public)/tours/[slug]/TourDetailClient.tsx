@@ -5,15 +5,17 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   MapPin, Clock, Users, Star, CheckCircle2, XCircle,
-  ChevronDown, ChevronUp, Phone, Plus, ArrowLeft,
+  ChevronDown, ChevronUp, Phone, Plus, ArrowLeft, Play, Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { TourCard } from "@/components/tours/TourCard";
-import { buildWhatsAppMessage } from "@/lib/whatsapp";
-import { formatPrice, formatDuration } from "@/lib/mock-data";
+import { TourLeadFormSheet } from "@/components/tours/TourLeadFormSheet";
+import { formatDuration } from "@/lib/mock-data";
 import { useExperienceBuilderOptional } from "@/lib/experience-builder-context";
+import { useCurrency } from "@/lib/currency-context";
+import { extractYouTubeId } from "@/lib/youtube";
 import type { TourDetail, TourSummary } from "@/lib/types";
 
 interface TourDetailClientProps {
@@ -23,10 +25,13 @@ interface TourDetailClientProps {
 
 export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) {
   const [activeImage, setActiveImage] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [itineraryOpen, setItineraryOpen] = useState(true);
+  const [leadFormOpen, setLeadFormOpen] = useState(false);
 
   const builder = useExperienceBuilderOptional();
+  const { formatPrice } = useCurrency();
   const isAdded = builder?.isSelected(tour.id) ?? false;
 
   function handleBuilderToggle() {
@@ -36,22 +41,7 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
 
   const coverImage = tour.images[0]?.url ?? tour.coverImage;
   const primaryCategory = tour.categories[0];
-
-  function handleWhatsApp() {
-    const { whatsappUrl } = buildWhatsAppMessage({
-      selectedTours: [
-        {
-          title: tour.title,
-          priceFrom: tour.priceFrom ?? undefined,
-          duration: tour.durationMinutes
-            ? formatDuration(tour.durationMinutes)
-            : undefined,
-        },
-      ],
-      source: `/tours/${tour.slug}`,
-    });
-    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-  }
+  const videoId = tour.videoUrl ? extractYouTubeId(tour.videoUrl) : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -74,35 +64,81 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
             {/* Gallery */}
             <div className="space-y-2">
               <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-muted">
-                {coverImage && (
-                  <Image
-                    src={tour.images[activeImage]?.url ?? coverImage}
-                    alt={tour.images[activeImage]?.altText ?? tour.title}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 66vw"
-                    className="object-cover"
-                    priority
+                {showVideo && videoId ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+                    title={`Video: ${tour.title}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full"
                   />
-                )}
-                {primaryCategory && (
-                  <div className="absolute top-4 left-4">
-                    <span
-                      className="text-xs font-semibold px-3 py-1.5 rounded-full text-white shadow"
-                      style={{ backgroundColor: primaryCategory.color ?? "#0D1B3D" }}
-                    >
-                      {primaryCategory.name}
-                    </span>
-                  </div>
+                ) : (
+                  <>
+                    {coverImage && (
+                      <Image
+                        src={tour.images[activeImage]?.url ?? coverImage}
+                        alt={tour.images[activeImage]?.altText ?? tour.title}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 66vw"
+                        className="object-cover"
+                        priority
+                      />
+                    )}
+                    {primaryCategory && (
+                      <div className="absolute top-4 left-4">
+                        <span
+                          className="text-xs font-semibold px-3 py-1.5 rounded-full text-white shadow"
+                          style={{ backgroundColor: primaryCategory.color ?? "#0D1B3D" }}
+                        >
+                          {primaryCategory.name}
+                        </span>
+                      </div>
+                    )}
+                    {videoId && (
+                      <button
+                        onClick={() => setShowVideo(true)}
+                        aria-label="Reproducir video"
+                        className="absolute inset-0 flex items-center justify-center bg-black/10 hover:bg-black/20 transition-colors group"
+                      >
+                        <span className="w-16 h-16 rounded-full bg-white/95 group-hover:bg-white flex items-center justify-center shadow-xl transition-colors">
+                          <Play className="h-6 w-6 text-[#0D1B3D] ml-1" fill="currentColor" />
+                        </span>
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
-              {tour.images.length > 1 && (
+              {(tour.images.length > 1 || videoId) && (
                 <div className="flex gap-2 overflow-x-auto pb-1">
+                  {videoId && (
+                    <button
+                      onClick={() => setShowVideo(true)}
+                      className={`relative w-20 h-14 rounded-lg overflow-hidden shrink-0 transition-all ${
+                        showVideo
+                          ? "ring-2 ring-primary ring-offset-1"
+                          : "opacity-60 hover:opacity-90"
+                      }`}
+                    >
+                      <Image
+                        src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                        alt="Video del tour"
+                        fill
+                        className="object-cover"
+                      />
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/30">
+                        <Play className="h-4 w-4 text-white" fill="white" />
+                      </span>
+                    </button>
+                  )}
                   {tour.images.map((img, i) => (
                     <button
                       key={i}
-                      onClick={() => setActiveImage(i)}
+                      onClick={() => {
+                        setActiveImage(i);
+                        setShowVideo(false);
+                      }}
                       className={`relative w-20 h-14 rounded-lg overflow-hidden shrink-0 transition-all ${
-                        activeImage === i
+                        !showVideo && activeImage === i
                           ? "ring-2 ring-primary ring-offset-1"
                           : "opacity-60 hover:opacity-90"
                       }`}
@@ -170,6 +206,18 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-primary" />
                     <span className="truncate max-w-[240px]">{tour.meetingPoint}</span>
+                  </div>
+                )}
+                {tour.departureTimes && tour.departureTimes.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    <span>Salidas: {tour.departureTimes.join(", ")}</span>
+                  </div>
+                )}
+                {tour.returnTime && (
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <span>Regreso aprox. {tour.returnTime}</span>
                   </div>
                 )}
               </div>
@@ -309,6 +357,46 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
               </div>
             )}
 
+            {/* Reviews */}
+            {tour.reviews.length > 0 && (
+              <div>
+                <h2 className="font-heading font-semibold text-lg text-foreground mb-4">
+                  Reseñas de viajeros
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {tour.reviews.map((review) => (
+                    <div
+                      key={review.id}
+                      className="border border-border/50 rounded-xl bg-white p-4"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-sm text-foreground">
+                          {review.authorName}
+                        </span>
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-3.5 w-3.5 ${
+                                i < review.rating
+                                  ? "fill-[#FFC97A] text-[#FFC97A]"
+                                  : "fill-muted text-muted"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      {review.comment && (
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {review.comment}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Related tours */}
             {relatedTours.length > 0 && (
               <div>
@@ -334,9 +422,12 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
                   <div>
                     <span className="text-sm text-muted-foreground">Precio desde</span>
                     <p className="font-heading font-bold text-2xl text-foreground mt-0.5">
-                      {formatPrice(tour.priceFrom, tour.currency)}
+                      {formatPrice(tour.priceFrom)}
                     </p>
-                    <p className="text-xs text-muted-foreground">por persona</p>
+                    <p className="text-xs text-muted-foreground">
+                      Adulto, por persona
+                      {tour.priceChild ? ` · Niño ${formatPrice(tour.priceChild)}` : ""}
+                    </p>
                   </div>
                 )}
 
@@ -372,7 +463,7 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
                 {/* CTAs */}
                 <div className="space-y-3">
                   <Button
-                    onClick={handleWhatsApp}
+                    onClick={() => setLeadFormOpen(true)}
                     className="w-full bg-[#25D366] hover:bg-[#1ebe59] text-white font-semibold rounded-xl py-3 gap-2"
                   >
                     <Phone className="h-4 w-4" />
@@ -409,12 +500,12 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
           <div className="flex-1">
             <span className="text-xs text-muted-foreground block">Desde</span>
             <span className="font-bold text-foreground">
-              {formatPrice(tour.priceFrom, tour.currency)}
+              {formatPrice(tour.priceFrom)}
             </span>
           </div>
         )}
         <Button
-          onClick={handleWhatsApp}
+          onClick={() => setLeadFormOpen(true)}
           className="bg-[#25D366] hover:bg-[#1ebe59] text-white font-semibold rounded-xl gap-2 px-6"
         >
           <Phone className="h-4 w-4" />
@@ -424,6 +515,18 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
 
       {/* Spacer for mobile CTA */}
       <div className="lg:hidden h-20" />
+
+      <TourLeadFormSheet
+        open={leadFormOpen}
+        onOpenChange={setLeadFormOpen}
+        tour={{
+          id: tour.id,
+          slug: tour.slug,
+          title: tour.title,
+          priceFrom: tour.priceFrom,
+          durationMinutes: tour.durationMinutes,
+        }}
+      />
     </div>
   );
 }

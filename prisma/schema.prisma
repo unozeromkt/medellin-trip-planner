@@ -270,6 +270,7 @@ model Lead {
   message         String?
   whatsappMessage String?
   whatsappUrl     String?
+  pageUrl         String?
   status          LeadStatus @default(new)
   utmSource       String?
   utmMedium       String?

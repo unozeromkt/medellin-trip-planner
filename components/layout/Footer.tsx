@@ -49,11 +49,11 @@ export function Footer() {
             <ul className="space-y-2.5 text-sm">
               {[
                 { label: "Todos los tours", href: "/tours" },
-                { label: "Destinos", href: "/destinations" },
+                { label: "Destinos", href: "/tours" },
                 { label: "Categorías", href: "/categories" },
                 { label: "Constructor de experiencias", href: "/experience-builder" },
               ].map((item) => (
-                <li key={item.href}>
+                <li key={item.label}>
                   <Link href={item.href} className="hover:text-white transition-colors">
                     {item.label}
                   </Link>
@@ -87,7 +87,7 @@ export function Footer() {
                 { label: "Agencias B2B", href: "/agencias" },
                 { label: "Registro Agencias", href: "/agencias/registro" },
               ].map((item) => (
-                <li key={item.href}>
+                <li key={item.label}>
                   <Link href={item.href} className="hover:text-white transition-colors">
                     {item.label}
                   </Link>

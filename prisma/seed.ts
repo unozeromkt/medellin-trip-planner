@@ -118,23 +118,23 @@ async function main() {
   const operators = await Promise.all([
     prisma.operator.upsert({
       where: { slug: "turtle-bus" },
-      update: {},
-      create: { name: "Turtle Bus", slug: "turtle-bus", description: "Tours temáticos únicos en Medellín a bordo de nuestro icónico bus.", commercialName: "Turtle Bus Medellín", contactEmail: "info@turtlebus.co", status: "active" },
+      update: { logoUrl: "/logos/logo-turtlebus.webp" },
+      create: { name: "Turtle Bus", slug: "turtle-bus", description: "Tours temáticos únicos en Medellín a bordo de nuestro icónico bus.", commercialName: "Turtle Bus Medellín", contactEmail: "info@turtlebus.co", status: "active", logoUrl: "/logos/logo-turtlebus.webp" },
     }),
     prisma.operator.upsert({
       where: { slug: "aeroturex" },
-      update: {},
-      create: { name: "Aeroturex", slug: "aeroturex", description: "City tours y experiencias urbanas de alta calidad en Medellín.", commercialName: "Aeroturex Colombia", contactEmail: "info@aeroturex.co", status: "active" },
+      update: { logoUrl: "/logos/aeroturex-logo.png" },
+      create: { name: "Aeroturex", slug: "aeroturex", description: "City tours y experiencias urbanas de alta calidad en Medellín.", commercialName: "Aeroturex Colombia", contactEmail: "info@aeroturex.co", status: "active", logoUrl: "/logos/aeroturex-logo.png" },
     }),
     prisma.operator.upsert({
       where: { slug: "guatape-travel" },
-      update: {},
-      create: { name: "Guatapé Travel", slug: "guatape-travel", description: "Especialistas en tours a Guatapé, la Piedra del Peñol y alrededores.", commercialName: "Guatapé Travel", contactEmail: "info@guatapetravel.co", status: "active" },
+      update: { logoUrl: "/logos/logo-web-guatape-travel-180px.png" },
+      create: { name: "Guatapé Travel", slug: "guatape-travel", description: "Especialistas en tours a Guatapé, la Piedra del Peñol y alrededores.", commercialName: "Guatapé Travel", contactEmail: "info@guatapetravel.co", status: "active", logoUrl: "/logos/logo-web-guatape-travel-180px.png" },
     }),
     prisma.operator.upsert({
       where: { slug: "chivas-celebraciones" },
-      update: {},
-      create: { name: "Chivas & Trolley Tours", slug: "chivas-celebraciones", description: "Experiencias de fiesta, chivas y eventos especiales en Medellín.", commercialName: "Chivas y Celebraciones", contactEmail: "info@chivasmedellin.co", status: "active" },
+      update: { logoUrl: "/logos/chivas-logo.png" },
+      create: { name: "Chivas & Trolley Tours", slug: "chivas-celebraciones", description: "Experiencias de fiesta, chivas y eventos especiales en Medellín.", commercialName: "Chivas y Celebraciones", contactEmail: "info@chivasmedellin.co", status: "active", logoUrl: "/logos/chivas-logo.png" },
     }),
   ]);
 

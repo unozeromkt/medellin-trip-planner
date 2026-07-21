@@ -54,6 +54,7 @@ export function AgencyRegisterCTA() {
           source: "portal-agencias",
           message: `Agencia: ${data.agencyName} | País: ${data.country} | Solicita acceso mayorista`,
           tours: [],
+          pageUrl: window.location.href,
         }),
       });
     } catch {

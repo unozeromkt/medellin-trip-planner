@@ -7,7 +7,7 @@ import { TourCard } from "@/components/tours/TourCard";
 import { BuilderSummary } from "@/components/builder/BuilderSummary";
 import { LeadFormSheet } from "@/components/builder/LeadFormSheet";
 import { useExperienceBuilder } from "@/lib/experience-builder-context";
-import { formatPrice } from "@/lib/mock-data";
+import { useCurrency } from "@/lib/currency-context";
 import type { TourSummary, Category } from "@/lib/types";
 
 interface ExperienceBuilderPageProps {
@@ -17,6 +17,7 @@ interface ExperienceBuilderPageProps {
 
 export function ExperienceBuilderPage({ tours, categories }: ExperienceBuilderPageProps) {
   const { selectedTours, totalPrice } = useExperienceBuilder();
+  const { formatPrice } = useCurrency();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);

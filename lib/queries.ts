@@ -87,6 +87,13 @@ export async function getTourBySlug(slug: string): Promise<TourDetail | null> {
         orderBy: { stepNumber: "asc" },
       },
       faqs: { select: { question: true, answer: true } },
+      videoUrl: true,
+      priceChild: true,
+      reviews: {
+        where: { isApproved: true },
+        select: { id: true, authorName: true, rating: true, comment: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
   if (!raw) return null;
@@ -101,6 +108,9 @@ export async function getTourBySlug(slug: string): Promise<TourDetail | null> {
     images: raw.images,
     itinerary: raw.itinerary,
     faqs: raw.faqs,
+    videoUrl: raw.videoUrl,
+    priceChild: raw.priceChild,
+    reviews: raw.reviews,
   };
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "motion/react";
 import { CheckCircle2, Bus, Zap, Waves, Moon, Leaf, Palette } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,8 @@ const operators = [
     experiences: 24,
     tags: ["Ciudad", "Cultural", "Grupos"],
     Icon: Bus,
+    logo: "/logos/logo-turtlebus.webp",
+    logoBg: null as string | null,
     accentColor: "#2BB7A6",
     since: "2018",
   },
@@ -22,6 +25,8 @@ const operators = [
     experiences: 18,
     tags: ["Aventura", "Outdoor", "Adrenalina"],
     Icon: Zap,
+    logo: "/logos/aeroturex-logo.png",
+    logoBg: "#0D1B3D", // mark is white-on-transparent, needs a dark backdrop
     accentColor: "#FFC97A",
     since: "2015",
   },
@@ -32,6 +37,8 @@ const operators = [
     experiences: 12,
     tags: ["Guatapé", "Náutico", "Naturaleza"],
     Icon: Waves,
+    logo: "/logos/logo-web-guatape-travel-180px.png",
+    logoBg: null,
     accentColor: "#A8CBE6",
     since: "2019",
   },
@@ -42,6 +49,8 @@ const operators = [
     experiences: 8,
     tags: ["Nocturno", "Cultura", "Grupal"],
     Icon: Moon,
+    logo: "/logos/chivas-logo.png",
+    logoBg: null,
     accentColor: "#2BB7A6",
     since: "2016",
   },
@@ -52,6 +61,8 @@ const operators = [
     experiences: 15,
     tags: ["Café", "Ecoturismo", "Rural"],
     Icon: Leaf,
+    logo: null,
+    logoBg: null,
     accentColor: "#FFC97A",
     since: "2020",
   },
@@ -62,6 +73,8 @@ const operators = [
     experiences: 10,
     tags: ["Arte", "Grafiti", "Historia"],
     Icon: Palette,
+    logo: null,
+    logoBg: null,
     accentColor: "#A8CBE6",
     since: "2017",
   },
@@ -118,15 +131,24 @@ export function PartnerBrands() {
               >
                 {/* Top row */}
                 <div className="flex items-start justify-between mb-4">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: `${op.accentColor}18` }}
-                  >
-                    <Icon
-                      className="w-6 h-6"
-                      style={{ color: op.accentColor }}
-                    />
-                  </div>
+                  {op.logo ? (
+                    <span
+                      className="relative w-12 h-12 rounded-full overflow-hidden border border-[#E9EEF4] p-2 shrink-0"
+                      style={{ backgroundColor: op.logoBg ?? "#FFFFFF" }}
+                    >
+                      <Image src={op.logo} alt={op.name} fill sizes="48px" className="object-contain" />
+                    </span>
+                  ) : (
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: `${op.accentColor}18` }}
+                    >
+                      <Icon
+                        className="w-6 h-6"
+                        style={{ color: op.accentColor }}
+                      />
+                    </div>
+                  )}
                   <div className="flex items-center gap-1.5 text-[#2BB7A6] text-xs font-semibold font-body">
                     <CheckCircle2 className="w-4 h-4" />
                     Verificado

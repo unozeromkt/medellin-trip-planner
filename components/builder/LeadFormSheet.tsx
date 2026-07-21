@@ -14,7 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useExperienceBuilder } from "@/lib/experience-builder-context";
-import { formatPrice, formatDuration } from "@/lib/mock-data";
+import { useCurrency } from "@/lib/currency-context";
+import { formatDuration } from "@/lib/mock-data";
 import { buildWhatsAppMessage } from "@/lib/whatsapp";
 
 const schema = z.object({
@@ -51,6 +52,7 @@ interface LeadFormSheetProps {
 
 export function LeadFormSheet({ open, onOpenChange }: LeadFormSheetProps) {
   const { selectedTours, totalPrice, totalDurationMinutes, clearAll } = useExperienceBuilder();
+  const { formatPrice } = useCurrency();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -81,6 +83,7 @@ export function LeadFormSheet({ open, onOpenChange }: LeadFormSheetProps) {
           })),
           totalPrice,
           source: "experience-builder",
+          pageUrl: window.location.href,
         }),
       });
     } catch {

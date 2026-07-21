@@ -558,6 +558,7 @@ export const mockTourDetails: Record<string, TourDetail> = {
       { question: "¿El tour opera si llueve?", answer: "Sí, el tour opera en todas las condiciones climáticas. El tour en lancha puede ajustarse según el clima." },
       { question: "¿Puedo reservar para grupos privados?", answer: "¡Por supuesto! Contáctanos por WhatsApp para cotizaciones de grupos privados con transporte exclusivo." },
     ],
+    reviews: [],
   },
   "turtle-bus-city-tour": {
     ...mockTours.find((t) => t.slug === "turtle-bus-city-tour")!,
@@ -590,6 +591,7 @@ Nuestros guías locales te contarán la historia de transformación de Medellín
       { question: "¿Cuánto dura el tour?", answer: "Aproximadamente 3 horas, incluyendo las paradas fotográficas." },
       { question: "¿En qué idiomas se hace el tour?", answer: "En español e inglés. Para otros idiomas, contáctanos con anticipación." },
     ],
+    reviews: [],
   },
 };
 

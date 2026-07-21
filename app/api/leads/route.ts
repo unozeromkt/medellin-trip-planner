@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { syncLeadToGHL } from "@/lib/ghl";
 
 const leadSchema = z.object({
   name: z.string().min(1),
@@ -20,6 +21,7 @@ const leadSchema = z.object({
   ),
   totalPrice: z.number().optional(),
   source: z.string().optional(),
+  pageUrl: z.string().optional(),
 });
 
 const BUDGET_RANGES: Record<string, { budgetMin: number; budgetMax: number | null }> = {
@@ -62,6 +64,7 @@ export async function POST(request: NextRequest) {
         language: data.language ?? null,
         message: data.message ?? null,
         source: data.source ?? "experience-builder",
+        pageUrl: data.pageUrl ?? null,
         status: "new",
         leadTours: {
           create: data.tours.map((t) => ({
@@ -70,6 +73,20 @@ export async function POST(request: NextRequest) {
           })),
         },
       },
+    });
+
+    await syncLeadToGHL({
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+      source: data.source ?? "experience-builder",
+      message: data.message,
+      tourTitles: data.tours.map((t) => t.title),
+      peopleCount: data.peopleCount,
+      travelDate: data.travelDate,
+      budget: data.budget,
+      pageUrl: data.pageUrl,
+      totalPrice: data.totalPrice,
     });
 
     return NextResponse.json({ success: true, leadId: lead.id });

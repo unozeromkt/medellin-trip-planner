@@ -1,72 +1,105 @@
-import { Search, Layers, MessageCircle } from "lucide-react";
+import Image from "next/image";
+import { MessageCircle } from "lucide-react";
 
 const steps = [
   {
-    icon: Search,
     number: "01",
     title: "Elige tus experiencias",
     description:
-      "Explora nuestro catálogo de tours curados. Filtra por destino, categoría, duración o presupuesto y encuentra lo que buscas.",
-    color: "bg-primary/10 text-primary",
+      "Explora nuestro catálogo curado. Filtra por destino, categoría, duración o presupuesto y encuentra lo que buscas.",
   },
   {
-    icon: Layers,
     number: "02",
     title: "Combina y planifica",
     description:
-      "Usa el Constructor de Experiencias para combinar múltiples tours y crear tu itinerario ideal. Ve el total estimado en tiempo real.",
-    color: "bg-accent/20 text-[#B8860B]",
+      "Arma tu itinerario combinando tours de distintos operadores y revisa el total estimado en tiempo real.",
   },
   {
-    icon: MessageCircle,
     number: "03",
     title: "Solicita por WhatsApp",
     description:
-      "Un mensaje prellenado con todos los detalles de tu viaje llega directamente a nuestro equipo. Sin formularios complicados.",
-    color: "bg-[#25D366]/10 text-[#25D366]",
+      "Un mensaje con todos los detalles de tu viaje llega directo a nuestro equipo. Sin formularios complicados.",
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section className="py-16 bg-white">
+    <section className="py-20 lg:py-24 bg-white overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <p className="text-xs font-semibold text-[#2BB7A6] uppercase tracking-widest mb-2">
-            ¿Cómo funciona?
-          </p>
-          <h2 className="font-heading text-3xl font-bold text-foreground">
-            Planear tu viaje es muy simple
-          </h2>
-          <p className="text-muted-foreground mt-3 max-w-md mx-auto">
-            De la inspiración a la solicitud en tres pasos. Sin complicaciones, sin esperas.
-          </p>
-        </div>
+        <div className="grid lg:grid-cols-[1.15fr_1fr] gap-14 lg:gap-16 items-center">
+          {/* Left: heading + photo */}
+          <div>
+            <p className="text-xs font-semibold text-[#2BB7A6] uppercase tracking-widest mb-3">
+              ¿Cómo funciona?
+            </p>
+            <h2 className="font-heading text-4xl sm:text-5xl font-bold text-foreground leading-[1.1] mb-8">
+              Planea tu viaje
+              <br />
+              en minutos.
+            </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          {steps.map((step, i) => (
-            <div key={step.number} className="relative flex flex-col items-center text-center md:items-start md:text-left">
-              {/* Connector line */}
-              {i < steps.length - 1 && (
-                <div className="hidden md:block absolute top-8 left-[calc(50%+2.5rem)] right-0 h-px bg-border" />
-              )}
-
-              <div className={`w-14 h-14 rounded-2xl ${step.color} flex items-center justify-center mb-4 shrink-0`}>
-                <step.icon className="h-6 w-6" />
+            <div className="relative rounded-3xl overflow-hidden shadow-lg shadow-[#0D1B3D]/10 aspect-[4/5] w-full max-w-xl">
+              <Image
+                src="/img/turtle-bus-adventure.jpg"
+                alt="Viajero disfrutando una experiencia en Medellín"
+                fill
+                sizes="(max-width: 1024px) 100vw, 520px"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0D1B3D]/60 via-transparent to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-3 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#2BB7A6]/10 flex items-center justify-center shrink-0">
+                  <MessageCircle className="w-4.5 h-4.5 text-[#2BB7A6]" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-foreground leading-none">
+                    Respuesta inmediata
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    directo por WhatsApp
+                  </p>
+                </div>
               </div>
-
-              <div className="text-4xl font-heading font-black text-muted/40 mb-2 leading-none">
-                {step.number}
-              </div>
-
-              <h3 className="font-heading font-bold text-lg text-foreground mb-2">
-                {step.title}
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {step.description}
-              </p>
             </div>
-          ))}
+          </div>
+
+          {/* Right: curved steps */}
+          <div className="relative">
+            <svg
+              className="absolute left-0 top-7 w-14 lg:w-16 h-[calc(100%-3.5rem)]"
+              viewBox="0 0 56 100"
+              preserveAspectRatio="none"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M28 0 C 46 16, 46 34, 28 50 C 10 66, 10 84, 28 100"
+                stroke="#D5DDE8"
+                strokeWidth="1.5"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+
+            <div className="space-y-14 lg:space-y-20">
+              {steps.map((step) => (
+                <div key={step.number} className="relative flex gap-6 lg:gap-8">
+                  <div className="relative z-10 shrink-0 w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-white border-2 border-[#2BB7A6] flex items-center justify-center">
+                    <span className="font-heading font-bold text-lg text-foreground">
+                      {step.number}
+                    </span>
+                  </div>
+                  <div className="pt-2 lg:pt-3">
+                    <h3 className="font-heading font-bold text-xl sm:text-2xl text-foreground mb-2">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-sm">
+                      {step.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

@@ -3,19 +3,24 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { Star, Clock, Plus, Check } from "lucide-react";
+import { Star, Clock, Plus, Check, CalendarCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { formatPrice, formatDuration } from "@/lib/mock-data";
+import { formatDuration } from "@/lib/mock-data";
 import { useExperienceBuilderOptional } from "@/lib/experience-builder-context";
+import { useCurrency } from "@/lib/currency-context";
 import type { TourSummary } from "@/lib/types";
 
 interface TourCardProps {
   tour: TourSummary;
 }
 
+// Some operator marks are white-on-transparent and need a dark backdrop to read.
+const DARK_LOGO_OPERATORS = new Set(["aeroturex"]);
+
 export function TourCard({ tour }: TourCardProps) {
   const primaryCategory = tour.categories[0];
   const builder = useExperienceBuilderOptional();
+  const { formatPrice } = useCurrency();
   const isAdded = builder?.isSelected(tour.id) ?? false;
 
   function handleBuilderToggle(e: React.MouseEvent) {
@@ -52,53 +57,67 @@ export function TourCard({ tour }: TourCardProps) {
           </div>
         )}
 
-        {/* Offer / heart */}
-        {tour.isOffer ? (
+        {/* Offer badge */}
+        {tour.isOffer && (
           <div className="absolute top-2.5 right-2.5">
             <Badge className="bg-accent text-foreground font-semibold text-[10px] rounded-full px-2 py-0.5 hover:bg-accent">
               Oferta
             </Badge>
           </div>
-        ) : (
-          <button
-            onClick={(e) => e.preventDefault()}
-            className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/85 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-red-500 hover:bg-white transition-all"
-            aria-label="Guardar tour"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </button>
         )}
 
-        {/* Add to builder */}
-        {builder && (
-          <div className="absolute inset-x-0 bottom-0 p-2.5 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-            <button
-              onClick={handleBuilderToggle}
-              className={`w-full text-xs font-semibold py-1.5 rounded-lg flex items-center justify-center gap-1.5 shadow-lg transition-colors ${
-                isAdded
-                  ? "bg-[#2BB7A6] text-white hover:bg-[#25A396]"
-                  : "bg-white text-foreground hover:bg-primary hover:text-white"
-              }`}
+        {/* Hover actions */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-2.5 space-y-1.5 translate-y-1.5 group-hover:translate-y-0 transition-transform duration-300">
+            <Link
+              href={`/tours/${tour.slug}`}
+              className="w-full text-xs font-semibold py-2 rounded-lg flex items-center justify-center gap-1.5 shadow-lg bg-[#2BB7A6] text-white hover:bg-[#25A396] transition-colors"
             >
-              {isAdded ? (
-                <><Check className="h-3 w-3" /> Agregado</>
-              ) : (
-                <><Plus className="h-3 w-3" /> Agregar a mi experiencia</>
-              )}
-            </button>
+              <CalendarCheck className="h-3.5 w-3.5" /> Reservar ahora
+            </Link>
+            {builder && (
+              <button
+                onClick={handleBuilderToggle}
+                className={`w-full text-xs font-semibold py-2 rounded-lg flex items-center justify-center gap-1.5 shadow-lg backdrop-blur-sm transition-colors ${
+                  isAdded
+                    ? "bg-[#0D1B3D] text-white hover:bg-[#0D1B3D]/90"
+                    : "bg-white/95 text-foreground hover:bg-white"
+                }`}
+              >
+                {isAdded ? (
+                  <><Check className="h-3.5 w-3.5" /> Agregado</>
+                ) : (
+                  <><Plus className="h-3.5 w-3.5" /> Agregar a mi experiencia</>
+                )}
+              </button>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Content */}
       <Link href={`/tours/${tour.slug}`} className="flex flex-col flex-1 p-3">
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-0.5">
-          {tour.operator.name}
-        </p>
+        <div className="flex items-center gap-1.5 mb-0.5">
+          {tour.operator.logoUrl && (
+            <span
+              className={`relative w-4 h-4 rounded-full overflow-hidden ring-1 ring-border shrink-0 ${
+                DARK_LOGO_OPERATORS.has(tour.operator.slug) ? "bg-[#0D1B3D]" : "bg-white"
+              }`}
+            >
+              <Image
+                src={tour.operator.logoUrl}
+                alt={tour.operator.name}
+                fill
+                sizes="16px"
+                className="object-contain"
+              />
+            </span>
+          )}
+          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide truncate">
+            {tour.operator.name}
+          </p>
+        </div>
 
         <h3 className="font-heading font-semibold text-sm text-foreground leading-snug mb-1 group-hover:text-primary transition-colors line-clamp-2">
           {tour.title}

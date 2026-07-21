@@ -120,4 +120,13 @@ export type TourDetail = TourSummary & {
     duration?: string | null;
   }[];
   faqs: { question: string; answer: string }[];
+  videoUrl?: string | null;
+  priceChild?: number | null;
+  reviews: {
+    id: string;
+    authorName: string;
+    rating: number;
+    comment?: string | null;
+    createdAt: Date;
+  }[];
 };

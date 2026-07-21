@@ -2,24 +2,23 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { Menu, Heart, ShoppingCart, Globe, User, LayoutDashboard, LogOut, ChevronDown } from "lucide-react";
+import { Menu, ShoppingCart, Globe, User, LayoutDashboard, LogOut, ChevronDown } from "lucide-react";
 import { WhatsappLogo, InstagramLogo } from "@phosphor-icons/react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useExperienceBuilderOptional } from "@/lib/experience-builder-context";
+import { useCurrency } from "@/lib/currency-context";
 import { roleHomePath } from "@/lib/roles";
 import { signOut } from "@/app/(auth)/actions";
 
 const navLinks = [
   { label: "Explorar", href: "/tours" },
-  { label: "Destinos", href: "/destinations" },
+  { label: "Destinos", href: "/tours" },
   { label: "Categorías", href: "/categories" },
   { label: "Blog", href: "/blog" },
 ];
 
 const WHATSAPP_NUMBER = "573107788830";
 const PHONE_DISPLAY = "(310)-778 8830";
-
-type Currency = "COP" | "USD";
 
 type NavUser = {
   name: string | null;
@@ -156,13 +155,9 @@ function AdminProfileMenu({ user }: { user: NavUser }) {
 
 export function Navbar({ user }: { user?: NavUser | null }) {
   const [open, setOpen] = useState(false);
-  const [currency, setCurrency] = useState<Currency>("COP");
+  const { currency, setCurrency, toggleCurrency } = useCurrency();
   const builder = useExperienceBuilderOptional();
   const count = builder?.selectedTours.length ?? 0;
-
-  function toggleCurrency() {
-    setCurrency((c) => (c === "COP" ? "USD" : "COP"));
-  }
 
   const currencyLabel = `ES / ${currency} $`;
 
@@ -185,7 +180,7 @@ export function Navbar({ user }: { user?: NavUser | null }) {
         <nav className="hidden md:flex items-center gap-0.5 flex-1 justify-center">
           {navLinks.map((link) => (
             <Link
-              key={link.href}
+              key={link.label}
               href={link.href}
               className="px-4 py-2 text-sm font-medium text-[#4A5C6A] hover:text-[#0D1B3D] hover:bg-[#F1F3F6] rounded-md transition-colors"
             >
@@ -196,11 +191,6 @@ export function Navbar({ user }: { user?: NavUser | null }) {
 
         {/* ── Desktop action icons ── */}
         <div className="hidden md:flex items-center divide-x divide-[#E2E8ED]">
-          <NavAction
-            icon={<Heart className="h-[18px] w-[18px]" strokeWidth={1.6} />}
-            label="Favoritos"
-            href="/favorites"
-          />
           <NavAction
             icon={<ShoppingCart className="h-[18px] w-[18px]" strokeWidth={1.6} />}
             label="Carrito"
@@ -252,7 +242,7 @@ export function Navbar({ user }: { user?: NavUser | null }) {
               <nav className="flex flex-col gap-0.5 mb-6">
                 {navLinks.map((link) => (
                   <Link
-                    key={link.href}
+                    key={link.label}
                     href={link.href}
                     onClick={() => setOpen(false)}
                     className="flex items-center py-2.5 px-3 text-sm font-medium text-[#0D1B3D] hover:text-[#2BB7A6] hover:bg-[#F1F3F6] rounded-md transition-colors"
@@ -264,15 +254,6 @@ export function Navbar({ user }: { user?: NavUser | null }) {
 
               {/* Utility links */}
               <div className="flex flex-col gap-1 border-t border-[#E2E8ED] pt-4 mb-5">
-                <Link
-                  href="/favorites"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 py-2.5 px-3 text-sm font-medium text-[#4A5C6A] hover:text-[#0D1B3D] hover:bg-[#F1F3F6] rounded-md transition-colors"
-                >
-                  <Heart className="h-4 w-4" strokeWidth={1.6} />
-                  Favoritos
-                </Link>
-
                 {user ? (
                   <>
                     {/* Mobile admin user card */}

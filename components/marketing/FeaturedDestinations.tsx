@@ -109,7 +109,7 @@ export function FeaturedDestinations({ destinations }: FeaturedDestinationsProps
           </div>
 
           <Link
-            href="/destinations"
+            href="/tours"
             className="hidden sm:flex items-center gap-1 text-sm font-medium text-[#2BB7A6] hover:text-[#2BB7A6]/80 transition-colors"
           >
             Ver todos <ArrowRight className="h-4 w-4" />
@@ -131,7 +131,7 @@ export function FeaturedDestinations({ destinations }: FeaturedDestinationsProps
         {destinations.map((dest) => (
           <Link
             key={dest.id}
-            href={`/destinations/${dest.slug}`}
+            href={`/tours?destination=${dest.slug}`}
             className="group relative flex-none w-[280px] sm:w-[320px] overflow-hidden rounded-2xl bg-muted snap-start"
             style={{ aspectRatio: "4/3" }}
           >
@@ -147,22 +147,6 @@ export function FeaturedDestinations({ destinations }: FeaturedDestinationsProps
             )}
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
-            {/* Favorite button */}
-            <button
-              onClick={(e) => e.preventDefault()}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/40 transition-colors"
-              aria-label="Guardar destino"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
-            </button>
 
             {/* Content */}
             <div className="absolute bottom-0 inset-x-0 p-4">
@@ -194,7 +178,7 @@ export function FeaturedDestinations({ destinations }: FeaturedDestinationsProps
 
       <div className="mt-5 sm:hidden text-center">
         <Link
-          href="/destinations"
+          href="/tours"
           className="inline-flex items-center gap-1 text-sm font-medium text-[#2BB7A6] hover:text-[#2BB7A6]/80 transition-colors"
         >
           Ver todos los destinos <ArrowRight className="h-4 w-4" />

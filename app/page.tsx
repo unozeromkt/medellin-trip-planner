@@ -7,20 +7,17 @@ import { FeaturedDestinations } from "@/components/marketing/FeaturedDestination
 import { FeaturedTours } from "@/components/marketing/FeaturedTours";
 import { HowItWorks } from "@/components/marketing/HowItWorks";
 import { WhatsAppCTABanner } from "@/components/marketing/WhatsAppCTABanner";
-import { TrustBar } from "@/components/marketing/TrustBar";
-import { ExperienceBuilderPromo } from "@/components/marketing/ExperienceBuilderPromo";
 import { OperatorBanner } from "@/components/marketing/OperatorBanner";
-import { getPublishedTours, getActiveDestinations, getActiveCategories, getSiteStats } from "@/lib/queries";
+import { getPublishedTours, getActiveDestinations, getActiveCategories } from "@/lib/queries";
 import { getCurrentUserProfile } from "@/lib/auth";
 
 const ADMIN_ROLES = ["admin", "editor", "operator"];
 
 export default async function HomePage() {
-  const [tours, destinations, categories, stats, profile] = await Promise.all([
+  const [tours, destinations, categories, profile] = await Promise.all([
     getPublishedTours(),
     getActiveDestinations(),
     getActiveCategories(),
-    getSiteStats(),
     getCurrentUserProfile(),
   ]);
 
@@ -34,11 +31,6 @@ export default async function HomePage() {
       <Navbar user={navUser} />
       <main>
         <HeroSearch destinations={destinations} categories={categories} />
-        <TrustBar
-          tours={stats.tours}
-          operators={stats.operators}
-          destinations={stats.destinations}
-        />
         <FeaturedCollections />
         <div className="bg-[#F7F9FC]">
           <div className="container mx-auto px-4">
@@ -46,7 +38,6 @@ export default async function HomePage() {
           </div>
         </div>
         <FeaturedTours tours={tours} />
-        <ExperienceBuilderPromo />
         <HowItWorks />
         <WhatsAppCTABanner />
         <OperatorBanner />
