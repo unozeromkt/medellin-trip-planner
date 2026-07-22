@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { confirmReservation, cancelReservation, completeReservation } from "./actions";
-import { CalendarDays, CheckCircle, XCircle, Flag, Clock3 } from "lucide-react";
+import { CalendarDays, CheckCircle, XCircle, Flag, Clock3, Crown, FileText } from "lucide-react";
+import { getPaymentMethod } from "@/lib/payment-info";
 
 export const metadata: Metadata = { title: "Reservas de agencias | Admin" };
 
@@ -30,6 +31,7 @@ export default async function AdminReservasPage({
       include: {
         agency: { select: { name: true, email: true } },
         package: { select: { name: true, slug: true, commission: true } },
+        passengers: { orderBy: [{ isLeader: "desc" }, { createdAt: "asc" }] },
       },
     }),
     Promise.all([
@@ -127,6 +129,48 @@ export default async function AdminReservasPage({
                     )}
                     {r.adminNotes && (
                       <p className="mt-1 text-xs font-body text-red-600">Nota admin: {r.adminNotes}</p>
+                    )}
+
+                    {r.passengers.length > 0 && (
+                      <div className="mt-3 rounded-xl border border-[#E2E8ED] p-3">
+                        <p className="text-xs font-body font-semibold text-[#637489] uppercase tracking-wide mb-2">
+                          Pasajeros ({r.passengers.length})
+                        </p>
+                        <div className="space-y-1.5">
+                          {r.passengers.map((p) => (
+                            <div key={p.id} className="text-xs font-body text-[#637489] flex flex-wrap items-center gap-x-2">
+                              {p.isLeader && <Crown className="w-3.5 h-3.5 text-[#FFC97A] shrink-0" />}
+                              <span className="font-semibold text-[#0D1B3D]">{p.fullName}</span>
+                              <span>· {p.documentId}</span>
+                              {p.isLeader && (
+                                <>
+                                  <span>· {p.phoneCountryCode} {p.phone}</span>
+                                  <span>· {p.email}</span>
+                                </>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {r.paymentMethod && (
+                      <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-body text-[#637489]">
+                        <span>
+                          Pago: <strong className="text-[#0D1B3D]">{getPaymentMethod(r.paymentMethod)?.label ?? r.paymentMethod}</strong>
+                        </span>
+                        {r.paymentRef && <span>Ref: {r.paymentRef}</span>}
+                        {r.paymentProofUrl && (
+                          <a
+                            href={r.paymentProofUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-1 font-semibold text-[#2BB7A6] hover:text-[#2BB7A6]/80"
+                          >
+                            <FileText className="w-3.5 h-3.5" /> Ver comprobante
+                          </a>
+                        )}
+                      </div>
                     )}
                   </div>
                   <div className="flex flex-col gap-2 shrink-0">

@@ -421,24 +421,49 @@ enum ReservationStatus {
   completed
 }
 
-model PackageReservation {
-  id             String            @id @default(cuid())
-  agencyId       String
-  packageId      String
-  status         ReservationStatus @default(pending)
-  travelDate     DateTime
-  paxCount       Int
-  contactName    String
-  contactPhone   String?
-  contactEmail   String?
-  passengerName  String?
-  groupLanguage  String?
-  message        String?
-  totalNet       Float?
-  adminNotes     String?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+enum PaymentMethod {
+  bancolombia
+  nequi
+  llave
+  pse
+}
 
-  agency  Agency           @relation(fields: [agencyId], references: [id])
-  package WholesalePackage @relation(fields: [packageId], references: [id])
+model PackageReservation {
+  id              String            @id @default(cuid())
+  agencyId        String
+  packageId       String
+  status          ReservationStatus @default(pending)
+  travelDate      DateTime
+  paxCount        Int
+  contactName     String
+  contactPhone    String?
+  contactEmail    String?
+  passengerName   String?
+  groupLanguage   String?
+  message         String?
+  totalNet        Float?
+  adminNotes      String?
+  paymentMethod   PaymentMethod?
+  paymentProofUrl String?
+  paymentRef      String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  agency     Agency           @relation(fields: [agencyId], references: [id])
+  package    WholesalePackage @relation(fields: [packageId], references: [id])
+  passengers Passenger[]
+}
+
+model Passenger {
+  id               String   @id @default(cuid())
+  reservationId    String
+  fullName         String
+  documentId       String
+  isLeader         Boolean  @default(false)
+  phoneCountryCode String?
+  phone            String?
+  email            String?
+  createdAt        DateTime @default(now())
+
+  reservation PackageReservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
 }

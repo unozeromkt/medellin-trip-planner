@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getCurrentUserProfile } from "@/lib/auth";
 import { getWholesalePackageBySlug } from "@/lib/queries";
 import { formatCOP } from "@/lib/utils";
-import { ReserveForm } from "./ReserveForm";
+import { ReserveWizard } from "./ReserveWizard";
 import {
   ArrowLeft, MapPin, Clock, Users, CheckCircle, XCircle,
   CalendarDays, Star,
@@ -157,7 +157,7 @@ export default async function AgencyPackageDetailPage({
                 </p>
               </div>
             ) : (
-              <ReserveForm
+              <ReserveWizard
                 packageId={pkg.id}
                 packageName={pkg.name}
                 netRate={pkg.netRate}

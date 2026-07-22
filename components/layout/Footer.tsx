@@ -49,8 +49,8 @@ export function Footer() {
             <ul className="space-y-2.5 text-sm">
               {[
                 { label: "Todos los tours", href: "/tours" },
-                { label: "Destinos", href: "/tours" },
-                { label: "Categorías", href: "/categories" },
+                { label: "Destinos", href: "/destinos" },
+                { label: "Categorías", href: "/categorias" },
                 { label: "Constructor de experiencias", href: "/experience-builder" },
               ].map((item) => (
                 <li key={item.label}>
@@ -82,6 +82,7 @@ export function Footer() {
             <ul className="space-y-2.5 text-sm">
               {[
                 { label: "Nosotros", href: "/about" },
+                { label: "Contacto", href: "/contacto" },
                 { label: "Blog", href: "/blog" },
                 { label: "Proveedores", href: "/provider/dashboard" },
                 { label: "Agencias B2B", href: "/agencias" },

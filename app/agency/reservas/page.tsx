@@ -3,7 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUserProfile } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { CalendarDays, Package, ArrowRight, Clock3 } from "lucide-react";
+import { CalendarDays, Package, ArrowRight, Clock3, Users, Pencil } from "lucide-react";
+import { getPaymentMethod } from "@/lib/payment-info";
 
 export const metadata: Metadata = { title: "Mis reservas | Portal Agencias" };
 
@@ -19,12 +20,12 @@ const STATUS_CFG: Record<RStatus, { label: string; className: string }> = {
 export default async function AgencyReservasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ new?: string }>;
+  searchParams: Promise<{ new?: string; updated?: string }>;
 }) {
   const profile = await getCurrentUserProfile();
   if (!profile || profile.role !== "agency" || !profile.agencyId) redirect("/login");
 
-  const { new: isNew } = await searchParams;
+  const { new: isNew, updated: isUpdated } = await searchParams;
 
   const reservations = await db.packageReservation.findMany({
     where: { agencyId: profile.agencyId },
@@ -33,6 +34,7 @@ export default async function AgencyReservasPage({
       package: {
         select: { name: true, slug: true, duration: true, category: true, commission: true },
       },
+      passengers: { where: { isLeader: true }, take: 1 },
     },
   });
 
@@ -53,6 +55,15 @@ export default async function AgencyReservasPage({
             <p className="font-body text-xs text-emerald-700 mt-0.5">
               Recibirás confirmación en 24–48 horas. Puedes seguir el estado aquí abajo.
             </p>
+          </div>
+        </div>
+      )}
+
+      {isUpdated === "1" && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-5 py-4 flex items-center gap-3">
+          <Clock3 className="w-5 h-5 text-emerald-600 shrink-0" />
+          <div>
+            <p className="font-body text-sm font-semibold text-emerald-800">Reserva actualizada correctamente</p>
           </div>
         </div>
       )}
@@ -114,6 +125,28 @@ export default async function AgencyReservasPage({
                       <span>{r.paxCount} pax</span>
                     </div>
 
+                    <div className="flex flex-wrap gap-4 text-xs font-body text-[#637489]">
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5" />
+                        Líder: <strong className="text-[#0D1B3D]">{r.passengers[0]?.fullName ?? "—"}</strong>
+                      </span>
+                      {r.paymentMethod && (
+                        <span>
+                          Pago: <strong className="text-[#0D1B3D]">{getPaymentMethod(r.paymentMethod)?.label ?? r.paymentMethod}</strong>
+                        </span>
+                      )}
+                      {r.paymentProofUrl && (
+                        <a
+                          href={r.paymentProofUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-semibold text-[#2BB7A6] hover:text-[#2BB7A6]/80"
+                        >
+                          Ver comprobante
+                        </a>
+                      )}
+                    </div>
+
                     {r.totalNet && (
                       <div className="flex gap-4 text-xs font-body">
                         <span className="text-[#637489]">
@@ -146,12 +179,22 @@ export default async function AgencyReservasPage({
                     )}
                   </div>
 
-                  <Link
-                    href={`/agency/paquetes/${r.package.slug}`}
-                    className="shrink-0 flex items-center gap-1.5 text-xs font-body font-semibold text-[#2BB7A6] hover:text-[#2BB7A6]/80 transition-colors"
-                  >
-                    Ver paquete <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                  <div className="shrink-0 flex flex-col items-end gap-2">
+                    {st === "pending" && (
+                      <Link
+                        href={`/agency/reservas/${r.id}/editar`}
+                        className="flex items-center gap-1.5 text-xs font-body font-semibold text-[#0D1B3D] bg-[#F1F3F6] hover:bg-[#E2E8ED] px-3 py-1.5 rounded-full transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5" /> Editar
+                      </Link>
+                    )}
+                    <Link
+                      href={`/agency/paquetes/${r.package.slug}`}
+                      className="flex items-center gap-1.5 text-xs font-body font-semibold text-[#2BB7A6] hover:text-[#2BB7A6]/80 transition-colors"
+                    >
+                      Ver paquete <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             );

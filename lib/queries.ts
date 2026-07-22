@@ -140,22 +140,112 @@ export async function getRelatedTours(
 
 // ── Destinations ────────────────────────────────────────────────────
 
+const DESTINATION_SELECT = {
+  id: true,
+  name: true,
+  slug: true,
+  description: true,
+  coverImage: true,
+  region: true,
+  rating: true,
+  reviewCount: true,
+} as const;
+
 export async function getActiveDestinations(): Promise<Destination[]> {
   return db.destination.findMany({
     where: { isActive: true },
-    select: { id: true, name: true, slug: true, description: true, coverImage: true, region: true, rating: true, reviewCount: true },
+    select: DESTINATION_SELECT,
     orderBy: { sortOrder: "asc" },
   });
 }
 
+export async function getDestinationBySlug(slug: string): Promise<Destination | null> {
+  return db.destination.findFirst({
+    where: { slug, isActive: true },
+    select: DESTINATION_SELECT,
+  });
+}
+
+export async function getActiveDestinationSlugs(): Promise<string[]> {
+  const rows = await db.destination.findMany({ where: { isActive: true }, select: { slug: true } });
+  return rows.map((r) => r.slug);
+}
+
+export async function getToursByDestinationSlug(slug: string): Promise<TourSummary[]> {
+  const rows = await db.tour.findMany({
+    where: { status: "published", destination: { slug } },
+    select: TOUR_SUMMARY_SELECT,
+    orderBy: [{ isFeatured: "desc" }, { createdAt: "asc" }],
+  });
+  return rows.map(mapTour);
+}
+
+export async function getDestinationTourCounts(): Promise<Record<string, number>> {
+  const [rows, destinations] = await Promise.all([
+    db.tour.groupBy({ by: ["destinationId"], where: { status: "published" }, _count: { _all: true } }),
+    db.destination.findMany({ select: { id: true, slug: true } }),
+  ]);
+  const idToSlug = new Map(destinations.map((d) => [d.id, d.slug]));
+  const counts: Record<string, number> = {};
+  for (const row of rows) {
+    const slug = idToSlug.get(row.destinationId);
+    if (slug) counts[slug] = row._count._all;
+  }
+  return counts;
+}
+
 // ── Categories ──────────────────────────────────────────────────────
+
+const CATEGORY_SELECT = {
+  id: true,
+  name: true,
+  slug: true,
+  description: true,
+  icon: true,
+  color: true,
+} as const;
 
 export async function getActiveCategories(): Promise<Category[]> {
   return db.category.findMany({
     where: { isActive: true },
-    select: { id: true, name: true, slug: true, icon: true, color: true },
+    select: CATEGORY_SELECT,
     orderBy: { sortOrder: "asc" },
   });
+}
+
+export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+  return db.category.findFirst({
+    where: { slug, isActive: true },
+    select: CATEGORY_SELECT,
+  });
+}
+
+export async function getActiveCategorySlugs(): Promise<string[]> {
+  const rows = await db.category.findMany({ where: { isActive: true }, select: { slug: true } });
+  return rows.map((r) => r.slug);
+}
+
+export async function getToursByCategorySlug(slug: string): Promise<TourSummary[]> {
+  const rows = await db.tour.findMany({
+    where: { status: "published", tourCategories: { some: { category: { slug } } } },
+    select: TOUR_SUMMARY_SELECT,
+    orderBy: [{ isFeatured: "desc" }, { createdAt: "asc" }],
+  });
+  return rows.map(mapTour);
+}
+
+export async function getCategoryTourCounts(): Promise<Record<string, number>> {
+  const [rows, categories] = await Promise.all([
+    db.tourCategory.groupBy({ by: ["categoryId"], where: { tour: { status: "published" } }, _count: { _all: true } }),
+    db.category.findMany({ select: { id: true, slug: true } }),
+  ]);
+  const idToSlug = new Map(categories.map((c) => [c.id, c.slug]));
+  const counts: Record<string, number> = {};
+  for (const row of rows) {
+    const slug = idToSlug.get(row.categoryId);
+    if (slug) counts[slug] = row._count._all;
+  }
+  return counts;
 }
 
 // ── Wholesale Packages ──────────────────────────────────────────────

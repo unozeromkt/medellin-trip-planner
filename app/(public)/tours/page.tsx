@@ -3,10 +3,27 @@ import type { Metadata } from "next";
 import { ToursContent } from "./ToursContent";
 import { getPublishedTours, getActiveCategories, getActiveDestinations } from "@/lib/queries";
 
+const TITLE = "Tours y Experiencias";
+const DESCRIPTION =
+  "Descubre los mejores tours en Medellín, Guatapé y Antioquia. Filtra por categoría, destino y presupuesto.";
+
 export const metadata: Metadata = {
-  title: "Tours y Experiencias",
-  description:
-    "Descubre los mejores tours en Medellín, Guatapé y Antioquia. Filtra por categoría, destino y presupuesto.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: {
+    canonical: "/tours",
+  },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: "/tours",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 export default async function ToursPage() {

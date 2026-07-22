@@ -131,7 +131,7 @@ export function FeaturedDestinations({ destinations }: FeaturedDestinationsProps
         {destinations.map((dest) => (
           <Link
             key={dest.id}
-            href={`/tours?destination=${dest.slug}`}
+            href={`/destinos/${dest.slug}`}
             className="group relative flex-none w-[280px] sm:w-[320px] overflow-hidden rounded-2xl bg-muted snap-start"
             style={{ aspectRatio: "4/3" }}
           >

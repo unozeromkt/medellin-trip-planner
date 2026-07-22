@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { MessageCircle } from "lucide-react";
 
 const steps = [
   {
@@ -47,19 +46,6 @@ export function HowItWorks() {
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0D1B3D]/60 via-transparent to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-3 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#2BB7A6]/10 flex items-center justify-center shrink-0">
-                  <MessageCircle className="w-4.5 h-4.5 text-[#2BB7A6]" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-foreground leading-none">
-                    Respuesta inmediata
-                  </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    directo por WhatsApp
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
 
