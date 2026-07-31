@@ -16,12 +16,46 @@ import { useCurrency } from "@/lib/currency-context";
 import { formatDuration } from "@/lib/mock-data";
 import { buildWhatsAppMessage } from "@/lib/whatsapp";
 
+const PICKUP_OPTIONS = [
+  { value: "no", label: "No, no necesito recogida" },
+  { value: "poblado", label: "Sí, recogerme en El Poblado" },
+  { value: "laureles", label: "Sí, recogerme en Laureles" },
+] as const;
+
+const PICKUP_LABELS: Record<string, string> = Object.fromEntries(
+  PICKUP_OPTIONS.map((o) => [o.value, o.label])
+);
+
+const PAYMENT_OPTIONS = [
+  { value: "efectivo", label: "Efectivo en USD o COP (al momento del tour)" },
+  { value: "tarjeta", label: "Tarjeta débito o crédito (+5% comisión bancaria adicional)" },
+] as const;
+
+const PAYMENT_LABELS: Record<string, string> = Object.fromEntries(
+  PAYMENT_OPTIONS.map((o) => [o.value, o.label])
+);
+
+function formatAdditionalInfo(values: {
+  pickup: string;
+  paymentMethod: string;
+  contactDocument: string;
+}) {
+  return [
+    `Recogida en hotel: ${PICKUP_LABELS[values.pickup]}`,
+    `Método de pago: ${PAYMENT_LABELS[values.paymentMethod]}`,
+    `Documento de contacto: ${values.contactDocument}`,
+  ].join(" | ");
+}
+
 const schema = z.object({
   name: z.string().min(2, "Ingresa tu nombre completo"),
   phone: z.string().min(7, "Ingresa un número válido"),
   email: z.string().optional(),
   travelDate: z.string().min(1, "Selecciona una fecha"),
   peopleCount: z.number().min(1, "Mínimo 1 persona").max(100),
+  pickup: z.enum(["no", "poblado", "laureles"], { message: "Selecciona una opción" }),
+  paymentMethod: z.enum(["efectivo", "tarjeta"], { message: "Selecciona un método de pago" }),
+  contactDocument: z.string().min(3, "Ingresa el número de documento"),
   message: z.string().optional(),
 });
 
@@ -56,12 +90,14 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
 
   async function onSubmit(values: FormValues) {
     setLoading(true);
+    const additionalInfo = formatAdditionalInfo(values);
     try {
       await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...values,
+          additionalInfo,
           tours: [
             {
               id: tour.id,
@@ -85,6 +121,7 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
       email: values.email ?? undefined,
       travelDate: values.travelDate,
       peopleCount: values.peopleCount,
+      additionalInfo,
       selectedTours: [
         {
           title: tour.title,
@@ -233,6 +270,74 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
                   )}
                 </div>
               </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="pickup">
+                  ¿Desea ser recogido en su hotel? <span className="text-destructive">*</span>
+                </Label>
+                <select
+                  id="pickup"
+                  defaultValue=""
+                  className="w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
+                  {...register("pickup")}
+                >
+                  <option value="" disabled>
+                    Seleccionar
+                  </option>
+                  {PICKUP_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-muted-foreground">
+                  Recogida disponible solo en El Poblado y Laureles.
+                </p>
+                {errors.pickup && <p className="text-xs text-destructive">{errors.pickup.message}</p>}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="paymentMethod">
+                  Método de pago <span className="text-destructive">*</span>
+                </Label>
+                <select
+                  id="paymentMethod"
+                  defaultValue=""
+                  className="w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
+                  {...register("paymentMethod")}
+                >
+                  <option value="" disabled>
+                    Seleccionar
+                  </option>
+                  {PAYMENT_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.paymentMethod && (
+                  <p className="text-xs text-destructive">{errors.paymentMethod.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="contactDocument">
+                  Documento de la persona de contacto <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="contactDocument"
+                  placeholder="Cédula o pasaporte"
+                  className="rounded-xl"
+                  {...register("contactDocument")}
+                />
+                {errors.contactDocument && (
+                  <p className="text-xs text-destructive">{errors.contactDocument.message}</p>
+                )}
+              </div>
+
+              <p className="text-xs text-muted-foreground bg-muted/50 rounded-xl px-3 py-2">
+                Nota: todos nuestros tours finalizan en el parque de El Poblado.
+              </p>
 
               <div className="space-y-1.5">
                 <Label htmlFor="message">Mensaje adicional (opcional)</Label>

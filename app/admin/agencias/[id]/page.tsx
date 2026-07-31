@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { absoluteUrl } from "@/lib/seo";
 import { SettingsForm } from "./SettingsForm";
 import {
   approveAgency,
@@ -242,6 +243,11 @@ export default async function AgencyDetailPage({
             notes={agency.notes}
             websiteUrl={agency.websiteUrl}
             taxId={agency.taxId}
+            referralCode={agency.referralCode}
+            logoUrl={agency.logoUrl}
+            referralUrl={
+              agency.referralCode ? absoluteUrl(`/tours?ref=${agency.referralCode}`) : null
+            }
           />
         </div>
       </div>

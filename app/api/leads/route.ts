@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { syncLeadToGHL } from "@/lib/ghl";
 
@@ -22,6 +23,7 @@ const leadSchema = z.object({
   totalPrice: z.number().optional(),
   source: z.string().optional(),
   pageUrl: z.string().optional(),
+  additionalInfo: z.string().optional(),
 });
 
 const BUDGET_RANGES: Record<string, { budgetMin: number; budgetMax: number | null }> = {
@@ -45,12 +47,24 @@ export async function POST(request: NextRequest) {
   }
 
   const data = parsed.data;
+  const budgetRange = data.budget ? BUDGET_RANGES[data.budget] : undefined;
 
-  // Try to save to DB — gracefully skip if not connected
+  let leadId: string | null = null;
+  let agency: { id: string; name: string; referralCode: string | null } | null = null;
+
+  // Try to save to DB — gracefully degrade if not connected. This must NOT
+  // gate the GHL sync below: a DB hiccup should never silently skip the CRM.
   try {
     const { db } = await import("@/lib/db");
 
-    const budgetRange = data.budget ? BUDGET_RANGES[data.budget] : undefined;
+    const cookieStore = await cookies();
+    const refCode = cookieStore.get("mtp_ref")?.value;
+    agency = refCode
+      ? await db.agency.findFirst({
+          where: { referralCode: refCode, status: "active" },
+          select: { id: true, name: true, referralCode: true },
+        })
+      : null;
 
     const lead = await db.lead.create({
       data: {
@@ -66,6 +80,8 @@ export async function POST(request: NextRequest) {
         source: data.source ?? "experience-builder",
         pageUrl: data.pageUrl ?? null,
         status: "new",
+        agencyId: agency?.id ?? null,
+        additionalInfo: data.additionalInfo ?? null,
         leadTours: {
           create: data.tours.map((t) => ({
             tourId: t.id,
@@ -74,25 +90,29 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-
-    await syncLeadToGHL({
-      name: data.name,
-      phone: data.phone,
-      email: data.email,
-      source: data.source ?? "experience-builder",
-      message: data.message,
-      tourTitles: data.tours.map((t) => t.title),
-      peopleCount: data.peopleCount,
-      travelDate: data.travelDate,
-      budget: data.budget,
-      pageUrl: data.pageUrl,
-      totalPrice: data.totalPrice,
-    });
-
-    return NextResponse.json({ success: true, leadId: lead.id });
+    leadId = lead.id;
   } catch (dbError) {
-    // DB not connected — log and return success anyway so WhatsApp flow continues
     console.warn("[leads API] DB unavailable, lead not persisted:", dbError);
-    return NextResponse.json({ success: true, leadId: null, persisted: false });
   }
+
+  // syncLeadToGHL never throws past its own boundary, so this always runs
+  // regardless of whether the DB write above succeeded.
+  await syncLeadToGHL({
+    name: data.name,
+    phone: data.phone,
+    email: data.email,
+    source: data.source ?? "experience-builder",
+    message: data.message,
+    tourTitles: data.tours.map((t) => t.title),
+    peopleCount: data.peopleCount,
+    travelDate: data.travelDate,
+    budget: data.budget,
+    pageUrl: data.pageUrl,
+    totalPrice: data.totalPrice,
+    agencyName: agency?.name ?? null,
+    agencyCode: agency?.referralCode ?? null,
+    additionalInfo: data.additionalInfo ?? null,
+  });
+
+  return NextResponse.json({ success: true, leadId, persisted: leadId !== null });
 }

@@ -47,6 +47,21 @@ export async function middleware(request: NextRequest) {
   // Do NOT redirect authenticated users away from /login here.
   // Role-based redirect happens in the signIn Server Action to avoid loops.
 
+  // Capture agency referral codes (?ref=CODE) into a cookie so attribution
+  // survives navigation across the site until a lead is submitted. Only
+  // overwrite the cookie when the incoming code is well-formed, so a broken
+  // link never clobbers a previously captured valid referral.
+  const ref = request.nextUrl.searchParams.get("ref");
+  if (ref && /^[a-z0-9-]{2,40}$/i.test(ref)) {
+    supabaseResponse.cookies.set("mtp_ref", ref.toLowerCase(), {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 90, // 90 days
+    });
+  }
+
   return supabaseResponse;
 }
 

@@ -13,6 +13,9 @@ export interface GHLLeadPayload {
   budget?: string | null;
   pageUrl?: string | null;
   totalPrice?: number | null;
+  agencyName?: string | null;
+  agencyCode?: string | null;
+  additionalInfo?: string | null;
 }
 
 function normalizePhone(phone: string): string {
@@ -37,7 +40,11 @@ function buildNoteBody(payload: GHLLeadPayload): string | null {
   if (payload.travelDate) lines.push(`Fecha tentativa: ${payload.travelDate}`);
   if (payload.budget) lines.push(`Presupuesto: ${payload.budget}`);
   if (payload.message) lines.push(`Mensaje: ${payload.message}`);
+  if (payload.additionalInfo) lines.push(`Información adicional: ${payload.additionalInfo}`);
   if (payload.pageUrl) lines.push(`Página de origen: ${payload.pageUrl}`);
+  if (payload.agencyName) {
+    lines.push(`Referido por agencia: ${payload.agencyName} (${payload.agencyCode})`);
+  }
   if (lines.length === 0) return null;
   return `Lead desde medellintripplanner.com\n${lines.join("\n")}`;
 }
@@ -75,6 +82,7 @@ export async function syncLeadToGHL(payload: GHLLeadPayload): Promise<void> {
     const { firstName, lastName } = splitName(payload.name);
     const tags = ["web-lead"];
     if (payload.source) tags.push(`web-${payload.source}`);
+    if (payload.agencyCode) tags.push(`agencia-${payload.agencyCode}`);
 
     const upsertRes = await fetch(`${GHL_API_BASE}/contacts/upsert`, {
       method: "POST",

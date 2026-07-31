@@ -9,6 +9,7 @@ export type WhatsAppLeadPayload = {
   budget?: string;
   language?: string;
   message?: string;
+  additionalInfo?: string;
   selectedTours: {
     title: string;
     priceFrom?: number;
@@ -47,6 +48,7 @@ export function buildWhatsAppMessage(payload: WhatsAppLeadPayload): {
     payload.budget ? `*Presupuesto:* ${payload.budget}` : null,
     payload.language ? `*Idioma preferido:* ${payload.language}` : null,
     payload.message ? `*Mensaje:* ${payload.message}` : null,
+    payload.additionalInfo ? `*Información adicional:* ${payload.additionalInfo}` : null,
     "",
     payload.selectedTours.length > 0
       ? `*Tours seleccionados:*\n${tourLines}`

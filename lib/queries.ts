@@ -321,6 +321,15 @@ export async function getSiteStats(): Promise<{
   return { tours, operators, destinations };
 }
 
+// ── Agency referral attribution ─────────────────────────────────────
+
+export async function getAgencyByReferralCode(code: string) {
+  return db.agency.findFirst({
+    where: { referralCode: code, status: "active" },
+    select: { id: true, name: true, logoUrl: true, referralCode: true },
+  });
+}
+
 export async function getDestinationPackageCounts(): Promise<Record<string, number>> {
   const packages = await db.wholesalePackage.findMany({
     where: { isActive: true },

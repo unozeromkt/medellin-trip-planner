@@ -1,7 +1,14 @@
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import { ToursContent } from "./ToursContent";
-import { getPublishedTours, getActiveCategories, getActiveDestinations } from "@/lib/queries";
+import {
+  getPublishedTours,
+  getActiveCategories,
+  getActiveDestinations,
+  getAgencyByReferralCode,
+} from "@/lib/queries";
+import { AgencyReferralBanner } from "@/components/tours/AgencyReferralBanner";
 
 const TITLE = "Tours y Experiencias";
 const DESCRIPTION =
@@ -26,15 +33,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ToursPage() {
-  const [tours, categories, destinations] = await Promise.all([
+export default async function ToursPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ref?: string }>;
+}) {
+  const [{ ref }, tours, categories, destinations] = await Promise.all([
+    searchParams,
     getPublishedTours(),
     getActiveCategories(),
     getActiveDestinations(),
   ]);
 
+  const cookieStore = await cookies();
+  const refCode = ref ?? cookieStore.get("mtp_ref")?.value;
+  const agency = refCode ? await getAgencyByReferralCode(refCode) : null;
+
   return (
     <div className="min-h-screen bg-background">
+      {agency && <AgencyReferralBanner name={agency.name} logoUrl={agency.logoUrl} />}
       <Suspense fallback={<ToursPageSkeleton />}>
         <ToursContent initialTours={tours} categories={categories} destinations={destinations} />
       </Suspense>

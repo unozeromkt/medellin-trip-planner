@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
-import { updateAgencySettings, type SettingsFormState } from "./actions";
-import { Loader2, CheckCircle } from "lucide-react";
+import { useActionState, useState } from "react";
+import { updateAgencySettings, regenerateReferralCode, type SettingsFormState } from "./actions";
+import { Loader2, CheckCircle, Copy, RefreshCw } from "lucide-react";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 type Level = "bronze" | "silver" | "gold" | "platinum";
 
@@ -30,6 +31,9 @@ type Props = {
   notes: string | null;
   websiteUrl: string | null;
   taxId: string | null;
+  referralCode: string | null;
+  logoUrl: string | null;
+  referralUrl: string | null;
 };
 
 export function SettingsForm({
@@ -39,12 +43,21 @@ export function SettingsForm({
   notes,
   websiteUrl,
   taxId,
+  referralCode,
+  logoUrl,
+  referralUrl,
 }: Props) {
   const action = updateAgencySettings.bind(null, agencyId);
   const [state, formAction, isPending] = useActionState<SettingsFormState, FormData>(
     action,
     {}
   );
+  const [logo, setLogo] = useState(logoUrl ?? "");
+  const [copied, setCopied] = useState(false);
+
+  async function handleRegenerate() {
+    await regenerateReferralCode(agencyId);
+  }
 
   return (
     <form action={formAction} className="space-y-6">
@@ -115,6 +128,66 @@ export function SettingsForm({
             </label>
           ))}
         </div>
+      </div>
+
+      {/* Referral code */}
+      <div>
+        <label className="block text-sm font-semibold text-[#0D1B3D] font-body mb-1.5">
+          Código de afiliado
+        </label>
+        <p className="text-xs text-[#637489] font-body mb-3">
+          Se usa para generar el link de referido que la agencia comparte con sus clientes.
+        </p>
+        <div className="flex items-center gap-2">
+          <input
+            name="referralCode"
+            type="text"
+            defaultValue={referralCode ?? ""}
+            placeholder="mi-agencia"
+            className={inputClass}
+          />
+          <button
+            type="submit"
+            formAction={handleRegenerate}
+            className="flex items-center gap-1.5 shrink-0 text-sm font-body font-semibold text-[#0D1B3D] bg-[#F1F3F6] hover:bg-[#E2E8ED] border border-[#E2E8ED] px-3.5 h-10 rounded-xl transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Regenerar
+          </button>
+        </div>
+        {referralUrl && (
+          <div className="flex items-center gap-2 mt-2">
+            <input
+              readOnly
+              value={referralUrl}
+              className={`${inputClass} text-[#637489]`}
+              onFocus={(e) => e.currentTarget.select()}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(referralUrl);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+              className="flex items-center gap-1.5 shrink-0 text-sm font-body font-semibold text-[#2BB7A6] bg-[#2BB7A6]/10 hover:bg-[#2BB7A6]/20 border border-[#2BB7A6]/30 px-3.5 h-10 rounded-xl transition-colors"
+            >
+              <Copy className="w-4 h-4" />
+              {copied ? "Copiado" : "Copiar"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Logo */}
+      <div>
+        <ImageUpload
+          label="Logo de la agencia"
+          value={logo}
+          onChange={setLogo}
+          hint="Se muestra en el banner que ve el cliente cuando llega con el link de referido."
+        />
+        <input type="hidden" name="logoUrl" value={logo} />
       </div>
 
       {/* Optional fields */}

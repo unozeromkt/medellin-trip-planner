@@ -275,10 +275,13 @@ model Lead {
   utmSource       String?
   utmMedium       String?
   utmCampaign     String?
+  agencyId        String?
+  additionalInfo  String?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
   leadTours LeadTour[]
+  agency    Agency?    @relation(fields: [agencyId], references: [id])
 }
 
 model LeadTour {
@@ -323,11 +326,14 @@ model Agency {
   level         AgencyLevel  @default(bronze)
   commissionPct Float        @default(18)
   notes         String?
+  referralCode  String?      @unique
+  logoUrl       String?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
   users        User[]
   reservations PackageReservation[]
+  leads        Lead[]
 }
 
 // ─────────────────────────────────────────────
