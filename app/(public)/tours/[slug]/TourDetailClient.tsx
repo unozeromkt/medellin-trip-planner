@@ -546,17 +546,17 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
         </div>
       )}
 
-      {/* Mobile sticky CTA */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-[#E2E8ED] px-4 py-3 flex items-center gap-3 z-40 shadow-[0_-4px_16px_rgba(13,27,61,0.08)]">
+      {/* Mobile sticky CTA — right padding reserves space so the GHL floating chat bubble (bottom-right) never covers the button */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-[#E2E8ED] pl-4 pr-[84px] py-3 flex items-center gap-3 z-40 shadow-[0_-4px_16px_rgba(13,27,61,0.08)]">
         {tour.priceFrom && (
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <span className="text-[11px] text-[#9DAAB5] block leading-none mb-0.5">Desde</span>
             <span className="font-heading font-bold text-lg text-[#0D1B3D]">{formatPrice(tour.priceFrom)}</span>
           </div>
         )}
         <Button
           onClick={() => setLeadFormOpen(true)}
-          className="bg-[#25D366] hover:bg-[#1ebe59] text-white font-semibold rounded-xl gap-2 px-6 py-6"
+          className="bg-[#25D366] hover:bg-[#1ebe59] text-white font-semibold rounded-xl gap-2 px-6 py-6 shrink-0"
         >
           <WhatsappLogo size={18} weight="fill" />
           Reservar

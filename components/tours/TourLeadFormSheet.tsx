@@ -147,7 +147,7 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
 
   return (
     <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto px-6">
+      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto px-6">
         {submitted ? (
           <div className="flex flex-col items-center justify-center h-full text-center py-12 px-4">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-5">
@@ -204,7 +204,7 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
               )}
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div className="space-y-1.5">
                 <Label htmlFor="name">
                   Nombre completo <span className="text-destructive">*</span>
@@ -237,15 +237,15 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3">
+                <div className="space-y-1.5 min-w-0">
                   <Label htmlFor="travelDate">
                     Fecha tentativa <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="travelDate"
                     type="date"
-                    className="rounded-xl"
+                    className="rounded-xl w-full"
                     min={new Date().toISOString().split("T")[0]}
                     {...register("travelDate")}
                   />
@@ -253,7 +253,7 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
                     <p className="text-xs text-destructive">{errors.travelDate.message}</p>
                   )}
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 min-w-0">
                   <Label htmlFor="peopleCount">
                     Personas <span className="text-destructive">*</span>
                   </Label>
@@ -262,7 +262,7 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
                     type="number"
                     min={1}
                     max={100}
-                    className="rounded-xl"
+                    className="rounded-xl w-full"
                     {...register("peopleCount", { valueAsNumber: true })}
                   />
                   {errors.peopleCount && (
