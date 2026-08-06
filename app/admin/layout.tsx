@@ -10,14 +10,13 @@ import {
   Map,
   Package,
   Users,
-  MessageSquare,
   LogOut,
   Plus,
   Building2,
   CalendarDays,
   MapPin,
   ExternalLink,
-  CreditCard,
+  ClipboardList,
 } from "lucide-react";
 
 export default async function AdminLayout({
@@ -32,10 +31,12 @@ export default async function AdminLayout({
 
   if (!user) redirect("/login");
 
-  const [profile, pendingAgencies, pendingReservations] = await Promise.all([
+  const [profile, pendingAgencies, pendingReservations, pendingLeads, pendingOrders] = await Promise.all([
     getCurrentUserProfile(),
     db.agency.count({ where: { status: "pending" } }),
     db.packageReservation.count({ where: { status: "pending" } }),
+    db.lead.count({ where: { status: "new" } }),
+    db.tourOrder.count({ where: { status: "pending" } }),
   ]);
   // If no Prisma User record exists yet, send to home to avoid a login redirect loop.
   if (!profile) redirect("/");
@@ -91,9 +92,13 @@ export default async function AdminLayout({
             { label: "Tours", href: "/admin/tours", icon: Map },
             { label: "Destinos", href: "/admin/destinos", icon: MapPin },
             { label: "Paquetes mayoristas", href: "/admin/paquetes", icon: Package },
-            { label: "Reservas", href: "/admin/reservas", icon: CalendarDays, badge: pendingReservations },
-            { label: "Pagos", href: "/admin/pagos", icon: CreditCard },
-            { label: "Leads", href: "/admin/leads", icon: MessageSquare },
+            {
+              label: "Reservas de tours",
+              href: "/admin/reservas-tours",
+              icon: ClipboardList,
+              badge: pendingLeads + pendingOrders,
+            },
+            { label: "Reservas agencias", href: "/admin/reservas", icon: CalendarDays, badge: pendingReservations },
             { label: "Operadores", href: "/admin/operadores", icon: Users },
             { label: "Agencias", href: "/admin/agencias", icon: Building2, badge: pendingAgencies },
           ].map(({ label, href, icon: Icon, badge }) => (
