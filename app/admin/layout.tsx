@@ -16,6 +16,7 @@ import {
   Building2,
   CalendarDays,
   MapPin,
+  ExternalLink,
 } from "lucide-react";
 
 export default async function AdminLayout({
@@ -59,6 +60,15 @@ export default async function AdminLayout({
               <span className="text-[#2BB7A6]">Planner</span>
             </div>
             <span className="text-white/40 text-[10px] font-body">Admin Portal</span>
+          </Link>
+          <Link
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 mt-3 text-xs font-body font-medium text-white/60 hover:text-white transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            Ir al sitio web
           </Link>
         </div>
 

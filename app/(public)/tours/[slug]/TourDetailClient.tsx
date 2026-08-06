@@ -36,6 +36,20 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 const panelClass =
   "bg-white rounded-2xl border border-[#E2E8ED] p-6 shadow-[0_1px_3px_rgba(13,27,61,0.04)]";
 
+function FactCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-[#E2E8ED] bg-white p-3">
+      <span className="w-9 h-9 rounded-lg bg-[#2BB7A6]/10 text-[#2BB7A6] flex items-center justify-center shrink-0">
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <p className="text-[10px] uppercase tracking-wide text-[#9DAAB5] font-semibold">{label}</p>
+        <p className="text-sm font-semibold text-[#0D1B3D] truncate">{value}</p>
+      </div>
+    </div>
+  );
+}
+
 export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) {
   const [showVideo, setShowVideo] = useState(false);
   const [lightbox, setLightbox] = useState<number | null>(null);
@@ -88,12 +102,19 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
       ? `Mín. ${tour.capacityMin}`
       : null;
 
-  const quickFacts = [
+  // Shown beside the hero photo on desktop; on mobile (no room next to the
+  // photo) they fall back into the facts grid below alongside secondaryFacts.
+  const heroFacts = [
     tour.durationMinutes && { icon: <Clock className="w-4 h-4" />, label: "Duración", value: formatDuration(tour.durationMinutes) },
-    capacityText && { icon: <Users className="w-4 h-4" />, label: "Grupo", value: capacityText },
     tour.departureTimes && tour.departureTimes.length > 0 && { icon: <Calendar className="w-4 h-4" />, label: "Salidas", value: tour.departureTimes.join(", ") },
+  ].filter(Boolean) as { icon: React.ReactNode; label: string; value: string }[];
+
+  const secondaryFacts = [
+    capacityText && { icon: <Users className="w-4 h-4" />, label: "Grupo", value: capacityText },
     tour.meetingPoint && { icon: <MapPin className="w-4 h-4" />, label: "Punto de encuentro", value: tour.meetingPoint },
   ].filter(Boolean) as { icon: React.ReactNode; label: string; value: string }[];
+
+  const allFacts = [...heroFacts, ...secondaryFacts];
 
   const trustItems = [
     { icon: <ShieldCheck className="w-4 h-4" />, label: "Operador verificado" },
@@ -133,137 +154,133 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
       </div>
 
       <div className="container mx-auto px-4 py-6 lg:py-8">
-        {/* ── Title header ── */}
-        <div className="mb-5">
-          <div className="flex flex-wrap items-center gap-2 mb-2.5">
-            {primaryCategory && (
-              <span
-                className="text-xs font-semibold px-2.5 py-1 rounded-full text-white"
-                style={{ backgroundColor: primaryCategory.color ?? "#0D1B3D" }}
-              >
-                {primaryCategory.name}
-              </span>
-            )}
-            {tour.isOffer && (
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#FFC97A] text-[#0D1B3D]">Oferta</span>
-            )}
-            <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#E8F8F6] text-[#2BB7A6]">
-              <ShieldCheck className="w-3.5 h-3.5" /> Operador verificado
-            </span>
-          </div>
-
-          <h1 className="font-heading text-2xl sm:text-[2rem] font-bold text-[#0D1B3D] leading-[1.15] mb-3 max-w-3xl">
-            {tour.title}
-          </h1>
-
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-[#637489]">
-            {tour.rating != null && (
-              <span className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-[#FFC97A] text-[#FFC97A]" />
-                <span className="font-bold text-[#0D1B3D]">{tour.rating.toFixed(1)}</span>
-                {tour.reviewCount != null && <span>({tour.reviewCount} reseñas)</span>}
-              </span>
-            )}
-            <span className="flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5" />
-              {tour.destination.name}
-              {tour.destination.region && `, ${tour.destination.region}`}
-            </span>
-            <span className="flex items-center gap-1.5">
-              {tour.operator.logoUrl && (
-                <span className="relative w-4 h-4 rounded-full overflow-hidden ring-1 ring-[#E2E8ED] bg-white shrink-0">
-                  <Image src={tour.operator.logoUrl} alt={tour.operator.name} fill sizes="16px" className="object-contain" />
+        {/* ── Title + hero photo (side by side on desktop) ── */}
+        <div className={`mb-5 sm:mb-6 ${hasGallery ? "sm:grid sm:grid-cols-2 sm:gap-8 sm:items-center" : ""}`}>
+          {/* Info column */}
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-2.5">
+              {primaryCategory && (
+                <span
+                  className="text-xs font-semibold px-2.5 py-1 rounded-full text-white"
+                  style={{ backgroundColor: primaryCategory.color ?? "#0D1B3D" }}
+                >
+                  {primaryCategory.name}
                 </span>
               )}
-              <span className="font-medium text-[#0D1B3D]">{tour.operator.name}</span>
-            </span>
+              {tour.isOffer && (
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#FFC97A] text-[#0D1B3D]">Oferta</span>
+              )}
+              <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#E8F8F6] text-[#2BB7A6]">
+                <ShieldCheck className="w-3.5 h-3.5" /> Operador verificado
+              </span>
+            </div>
+
+            <h1 className="font-heading text-2xl sm:text-[2rem] font-bold text-[#0D1B3D] leading-[1.15] mb-3">
+              {tour.title}
+            </h1>
+
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-[#637489]">
+              {tour.rating != null && (
+                <span className="flex items-center gap-1">
+                  <Star className="h-4 w-4 fill-[#FFC97A] text-[#FFC97A]" />
+                  <span className="font-bold text-[#0D1B3D]">{tour.rating.toFixed(1)}</span>
+                  {tour.reviewCount != null && <span>({tour.reviewCount} reseñas)</span>}
+                </span>
+              )}
+              <span className="flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5" />
+                {tour.destination.name}
+                {tour.destination.region && `, ${tour.destination.region}`}
+              </span>
+              <span className="flex items-center gap-1.5">
+                {tour.operator.logoUrl && (
+                  <span className="relative w-4 h-4 rounded-full overflow-hidden ring-1 ring-[#E2E8ED] bg-white shrink-0">
+                    <Image src={tour.operator.logoUrl} alt={tour.operator.name} fill sizes="16px" className="object-contain" />
+                  </span>
+                )}
+                <span className="font-medium text-[#0D1B3D]">{tour.operator.name}</span>
+              </span>
+            </div>
+
+            {tour.shortDescription && (
+              <p className="hidden sm:block text-[15px] text-[#4A5C6A] leading-relaxed mt-4">
+                {tour.shortDescription}
+              </p>
+            )}
+
+            {hasGallery && allFacts.length > 0 && (
+              <div className="hidden sm:grid grid-cols-2 gap-3 mt-6">
+                {allFacts.map((f, i) => (
+                  <FactCard key={i} {...f} />
+                ))}
+              </div>
+            )}
+
+            {hasGallery && (
+              <ul className="hidden sm:flex flex-wrap gap-x-5 gap-y-2 mt-6 text-sm text-[#4A5C6A]">
+                {trustItems.slice(1).map((t, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <span className="text-[#2BB7A6]">{t.icon}</span>
+                    {t.label}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
+
+          {/* Photo column (desktop only — mobile gallery renders separately below) */}
+          {hasGallery && (
+            <button
+              onClick={() => setLightbox(0)}
+              className="hidden sm:block group relative rounded-2xl overflow-hidden bg-[#E9EDF2] h-[440px]"
+            >
+              <Image
+                src={galleryImages[0].url}
+                alt={galleryImages[0].altText ?? tour.title}
+                fill
+                sizes="(max-width: 640px) 100vw, 600px"
+                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                quality={90}
+                priority
+              />
+              {videoId && <PlayButton />}
+              <span className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-[#0D1B3D] text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm">
+                <ImageIcon className="w-3.5 h-3.5" /> {galleryImages.length > 1 ? `Ver ${galleryImages.length} fotos` : "Ver foto"}
+              </span>
+            </button>
+          )}
         </div>
 
-        {/* ── Gallery ── */}
+        {/* ── Mobile gallery ── */}
         {hasGallery && (
-          <div className="mb-6">
-            {/* Desktop mosaic */}
-            <div className="hidden sm:grid grid-cols-3 gap-2 h-[440px]">
-              <button
-                onClick={() => setLightbox(0)}
-                className={`group relative ${galleryImages.length === 1 ? "col-span-3" : "col-span-2"} rounded-2xl overflow-hidden bg-[#E9EDF2]`}
-              >
-                <Image
-                  src={galleryImages[0].url}
-                  alt={galleryImages[0].altText ?? tour.title}
-                  fill
-                  sizes="(max-width: 1024px) 66vw, 600px"
-                  className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  quality={90}
-                  priority
-                />
-                {videoId && <PlayButton />}
-                <span className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-[#0D1B3D] text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm">
-                  <ImageIcon className="w-3.5 h-3.5" /> Ver fotos
-                </span>
-              </button>
-
-              {galleryImages.length === 2 && (
-                <button onClick={() => setLightbox(1)} className="group relative rounded-2xl overflow-hidden bg-[#E9EDF2]">
-                  <Image src={galleryImages[1].url} alt={galleryImages[1].altText ?? tour.title} fill sizes="300px" quality={85} className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-                </button>
-              )}
-
-              {galleryImages.length >= 3 && (
-                <div className="grid grid-rows-2 gap-2">
-                  {[1, 2].map((idx) => {
-                    const img = galleryImages[idx];
-                    const isLastVisible = idx === 2 && galleryImages.length > 3;
-                    return (
-                      <button key={idx} onClick={() => setLightbox(idx)} className="group relative rounded-2xl overflow-hidden bg-[#E9EDF2]">
-                        <Image src={img.url} alt={img.altText ?? tour.title} fill sizes="300px" quality={85} className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-                        {isLastVisible && (
-                          <span className="absolute inset-0 flex items-center justify-center bg-[#0D1B3D]/60 text-white font-heading font-bold text-lg">
-                            +{galleryImages.length - 3}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Mobile single + strip */}
-            <div className="sm:hidden space-y-2">
-              <button onClick={() => setLightbox(0)} className="relative block w-full aspect-[4/3] rounded-2xl overflow-hidden bg-[#E9EDF2]">
-                <Image src={galleryImages[0].url} alt={galleryImages[0].altText ?? tour.title} fill sizes="100vw" quality={90} className="object-cover" priority />
-                {videoId && <PlayButton />}
-              </button>
-              {galleryImages.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {galleryImages.slice(1).map((img, i) => (
-                    <button key={i} onClick={() => setLightbox(i + 1)} className="relative w-24 h-16 rounded-xl overflow-hidden shrink-0 bg-[#E9EDF2]">
-                      <Image src={img.url} alt={img.altText ?? tour.title} fill sizes="96px" quality={85} className="object-cover" />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+          <div className="sm:hidden mb-6 space-y-2">
+            <button onClick={() => setLightbox(0)} className="relative block w-full aspect-[4/3] rounded-2xl overflow-hidden bg-[#E9EDF2]">
+              <Image src={galleryImages[0].url} alt={galleryImages[0].altText ?? tour.title} fill sizes="100vw" quality={90} className="object-cover" priority />
+              {videoId && <PlayButton />}
+            </button>
+            {galleryImages.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {galleryImages.slice(1).map((img, i) => (
+                  <button key={i} onClick={() => setLightbox(i + 1)} className="relative w-24 h-16 rounded-xl overflow-hidden shrink-0 bg-[#E9EDF2]">
+                    <Image src={img.url} alt={img.altText ?? tour.title} fill sizes="96px" quality={85} className="object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* ── Main column ── */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Quick facts */}
-            {quickFacts.length > 0 && (
+            {/* Quick facts — on desktop, allFacts already show next to the
+                hero photo above, so only repeat them here on mobile (where
+                there's no room beside the photo). */}
+            {allFacts.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {quickFacts.map((f, i) => (
-                  <div key={i} className="flex items-center gap-3 rounded-xl border border-[#E2E8ED] bg-white p-3">
-                    <span className="w-9 h-9 rounded-lg bg-[#2BB7A6]/10 text-[#2BB7A6] flex items-center justify-center shrink-0">
-                      {f.icon}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-[10px] uppercase tracking-wide text-[#9DAAB5] font-semibold">{f.label}</p>
-                      <p className="text-sm font-semibold text-[#0D1B3D] truncate">{f.value}</p>
-                    </div>
+                {allFacts.map((f, i) => (
+                  <div key={i} className={hasGallery ? "sm:hidden" : ""}>
+                    <FactCard {...f} />
                   </div>
                 ))}
               </div>
