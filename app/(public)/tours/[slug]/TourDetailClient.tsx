@@ -195,6 +195,7 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
                   fill
                   sizes="(max-width: 1024px) 66vw, 600px"
                   className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  quality={90}
                   priority
                 />
                 {videoId && <PlayButton />}
@@ -205,7 +206,7 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
 
               {galleryImages.length === 2 && (
                 <button onClick={() => setLightbox(1)} className="group relative rounded-2xl overflow-hidden bg-[#E9EDF2]">
-                  <Image src={galleryImages[1].url} alt={galleryImages[1].altText ?? tour.title} fill sizes="300px" className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+                  <Image src={galleryImages[1].url} alt={galleryImages[1].altText ?? tour.title} fill sizes="300px" quality={85} className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
                 </button>
               )}
 
@@ -216,7 +217,7 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
                     const isLastVisible = idx === 2 && galleryImages.length > 3;
                     return (
                       <button key={idx} onClick={() => setLightbox(idx)} className="group relative rounded-2xl overflow-hidden bg-[#E9EDF2]">
-                        <Image src={img.url} alt={img.altText ?? tour.title} fill sizes="300px" className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+                        <Image src={img.url} alt={img.altText ?? tour.title} fill sizes="300px" quality={85} className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
                         {isLastVisible && (
                           <span className="absolute inset-0 flex items-center justify-center bg-[#0D1B3D]/60 text-white font-heading font-bold text-lg">
                             +{galleryImages.length - 3}
@@ -232,14 +233,14 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
             {/* Mobile single + strip */}
             <div className="sm:hidden space-y-2">
               <button onClick={() => setLightbox(0)} className="relative block w-full aspect-[4/3] rounded-2xl overflow-hidden bg-[#E9EDF2]">
-                <Image src={galleryImages[0].url} alt={galleryImages[0].altText ?? tour.title} fill sizes="100vw" className="object-cover" priority />
+                <Image src={galleryImages[0].url} alt={galleryImages[0].altText ?? tour.title} fill sizes="100vw" quality={90} className="object-cover" priority />
                 {videoId && <PlayButton />}
               </button>
               {galleryImages.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {galleryImages.slice(1).map((img, i) => (
                     <button key={i} onClick={() => setLightbox(i + 1)} className="relative w-24 h-16 rounded-xl overflow-hidden shrink-0 bg-[#E9EDF2]">
-                      <Image src={img.url} alt={img.altText ?? tour.title} fill sizes="96px" className="object-cover" />
+                      <Image src={img.url} alt={img.altText ?? tour.title} fill sizes="96px" quality={85} className="object-cover" />
                     </button>
                   ))}
                 </div>
@@ -514,7 +515,7 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
             </button>
           )}
           <div className="relative w-[92vw] h-[80vh]" onClick={(e) => e.stopPropagation()}>
-            <Image src={galleryImages[lightbox].url} alt={galleryImages[lightbox].altText ?? tour.title} fill sizes="92vw" className="object-contain" />
+            <Image src={galleryImages[lightbox].url} alt={galleryImages[lightbox].altText ?? tour.title} fill sizes="92vw" quality={90} className="object-contain" />
           </div>
           {galleryImages.length > 1 && (
             <button

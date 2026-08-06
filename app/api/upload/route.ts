@@ -6,7 +6,7 @@ import { getCurrentUserProfile } from "@/lib/auth";
 const BUCKET = "tour-images";
 const MAX_INPUT_BYTES = 15 * 1024 * 1024; // raw upload safety cap, pre-compression
 const MAX_DIMENSION = 1920; // px, longest side
-const WEBP_QUALITY = 80;
+const WEBP_QUALITY = 90;
 
 async function ensureBucket() {
   const admin = createAdminClient();

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { Map, Compass, Users, MessageSquare, Plus, ArrowRight, Package } from "lucide-react";
+import { Map, Compass, Users, MessageSquare, Plus, ArrowRight, Package, Pencil } from "lucide-react";
 
 async function getStats() {
   const [tours, destinations, operators, leads] = await Promise.all([
@@ -144,6 +144,14 @@ export default async function AdminDashboard() {
                     >
                       {status.label}
                     </span>
+                    <Link
+                      href={`/admin/tours/${tour.id}/edit`}
+                      title="Editar"
+                      className="shrink-0 inline-flex items-center gap-1 text-xs font-body font-medium text-[#2BB7A6] hover:text-[#2BB7A6]/80 transition-colors"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      Editar
+                    </Link>
                   </div>
                 );
               })
