@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Phone, Loader2, CheckCircle2 } from "lucide-react";
+import { Phone, Loader2, CheckCircle2, CreditCard } from "lucide-react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
@@ -15,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCurrency } from "@/lib/currency-context";
 import { formatDuration } from "@/lib/mock-data";
 import { buildWhatsAppMessage } from "@/lib/whatsapp";
+import { openWompiCheckout } from "@/lib/wompi-client";
 
 const PICKUP_OPTIONS = [
   { value: "no", label: "No, no necesito recogida" },
@@ -75,8 +77,11 @@ interface TourLeadFormSheetProps {
 
 export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormSheetProps) {
   const { formatPrice } = useCurrency();
+  const router = useRouter();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [payingOnline, setPayingOnline] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const {
     register,
@@ -87,6 +92,45 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
     resolver: zodResolver(schema),
     defaultValues: { peopleCount: 2 },
   });
+
+  async function onPayOnline(values: FormValues) {
+    setPaymentError(null);
+    setPayingOnline(true);
+    try {
+      const res = await fetch("/api/payments/wompi/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tourId: tour.id,
+          peopleCount: values.peopleCount,
+          travelDate: values.travelDate,
+          contactName: values.name,
+          contactPhone: values.phone,
+          contactEmail: values.email || undefined,
+          contactDocument: values.contactDocument,
+          pickup: values.pickup,
+          message: values.message,
+          pageUrl: window.location.href,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("No se pudo crear la orden de pago");
+      }
+
+      const order = await res.json();
+      const result = await openWompiCheckout(order);
+
+      if (result.transaction) {
+        router.push(`/pago/resultado?ref=${order.reference}`);
+        onOpenChange(false);
+      }
+    } catch {
+      setPaymentError("No pudimos iniciar el pago en línea. Intenta de nuevo o reserva por WhatsApp.");
+    } finally {
+      setPayingOnline(false);
+    }
+  }
 
   async function onSubmit(values: FormValues) {
     setLoading(true);
@@ -352,7 +396,7 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
 
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || payingOnline}
                 className="w-full bg-[#25D366] hover:bg-[#1ebe59] text-white font-semibold rounded-xl py-3 gap-2 mt-2"
               >
                 {loading ? (
@@ -367,6 +411,33 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
                   </>
                 )}
               </Button>
+
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="flex-1 h-px bg-border" />
+                o paga en línea ahora
+                <span className="flex-1 h-px bg-border" />
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                disabled={loading || payingOnline}
+                onClick={handleSubmit(onPayOnline)}
+                className="w-full border-primary/30 text-primary hover:bg-primary/5 font-semibold rounded-xl py-3 gap-2"
+              >
+                {payingOnline ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Abriendo pasarela de pago...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="h-4 w-4" />
+                    Pagar ahora con tarjeta / PSE
+                  </>
+                )}
+              </Button>
+              {paymentError && <p className="text-xs text-destructive text-center">{paymentError}</p>}
 
               <p className="text-xs text-muted-foreground text-center">
                 Tus datos no serán compartidos con terceros.

@@ -155,3 +155,115 @@ export async function syncLeadToGHL(payload: GHLLeadPayload): Promise<void> {
     console.error("[ghl] Lead sync failed:", err);
   }
 }
+
+export interface GHLMarkPaidPayload {
+  name: string;
+  phone: string;
+  email?: string | null;
+  tourTitle: string;
+  reference: string;
+  amountInCents: number;
+}
+
+/**
+ * Tags the contact "pago-realizado" and, if GHL_PIPELINE_STAGE_PAID_ID is
+ * configured, moves their existing Opportunity in GHL_PIPELINE_ID to that
+ * stage. Never throws past this boundary, same convention as syncLeadToGHL.
+ */
+export async function markGHLContactAsPaid(payload: GHLMarkPaidPayload): Promise<void> {
+  const token = process.env.GHL_PRIVATE_TOKEN;
+  const locationId = process.env.GHL_LOCATION_ID;
+
+  if (!token || !locationId) {
+    console.warn("[ghl] Missing GHL_PRIVATE_TOKEN or GHL_LOCATION_ID, skipping paid sync");
+    return;
+  }
+
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    Version: GHL_API_VERSION,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+
+  try {
+    const { firstName, lastName } = splitName(payload.name);
+    const upsertRes = await fetch(`${GHL_API_BASE}/contacts/upsert`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        locationId,
+        firstName,
+        lastName,
+        name: payload.name,
+        phone: normalizePhone(payload.phone),
+        email: payload.email || undefined,
+        tags: ["pago-realizado"],
+      }),
+    });
+
+    if (!upsertRes.ok) {
+      const text = await upsertRes.text().catch(() => "");
+      throw new Error(`contacts/upsert failed (${upsertRes.status}): ${text}`);
+    }
+
+    const { contact } = (await upsertRes.json()) as { contact?: { id?: string } };
+    const contactId = contact?.id;
+    if (!contactId) return;
+
+    const amountLabel = `$${Math.round(payload.amountInCents / 100).toLocaleString("es-CO")} COP`;
+    const noteRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}/notes`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        body: `Pago confirmado por Wompi — ${payload.tourTitle} — Ref: ${payload.reference} — ${amountLabel}`,
+      }),
+    });
+    if (!noteRes.ok) {
+      console.warn(`[ghl] Paid tag set but note failed (${noteRes.status})`);
+    }
+
+    const pipelineId = process.env.GHL_PIPELINE_ID;
+    const paidStageId = process.env.GHL_PIPELINE_STAGE_PAID_ID;
+
+    if (!pipelineId || !paidStageId) {
+      console.warn("[ghl] Missing GHL_PIPELINE_ID or GHL_PIPELINE_STAGE_PAID_ID, skipping stage move");
+      return;
+    }
+
+    const searchParams = new URLSearchParams({
+      location_id: locationId,
+      contact_id: contactId,
+      pipeline_id: pipelineId,
+    });
+    const searchRes = await fetch(`${GHL_API_BASE}/opportunities/search?${searchParams.toString()}`, {
+      method: "GET",
+      headers,
+    });
+
+    if (!searchRes.ok) {
+      const text = await searchRes.text().catch(() => "");
+      console.warn(`[ghl] Opportunity search failed (${searchRes.status}): ${text}`);
+      return;
+    }
+
+    const { opportunities } = (await searchRes.json()) as { opportunities?: { id: string }[] };
+    const opportunityId = opportunities?.[0]?.id;
+    if (!opportunityId) {
+      console.warn("[ghl] No opportunity found for contact, skipping stage move");
+      return;
+    }
+
+    const moveRes = await fetch(`${GHL_API_BASE}/opportunities/${opportunityId}`, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify({ pipelineStageId: paidStageId, status: "won" }),
+    });
+    if (!moveRes.ok) {
+      const text = await moveRes.text().catch(() => "");
+      console.warn(`[ghl] Opportunity stage move failed (${moveRes.status}): ${text}`);
+    }
+  } catch (err) {
+    console.error("[ghl] Mark-as-paid sync failed:", err);
+  }
+}

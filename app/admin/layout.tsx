@@ -17,6 +17,7 @@ import {
   CalendarDays,
   MapPin,
   ExternalLink,
+  CreditCard,
 } from "lucide-react";
 
 export default async function AdminLayout({
@@ -91,6 +92,7 @@ export default async function AdminLayout({
             { label: "Destinos", href: "/admin/destinos", icon: MapPin },
             { label: "Paquetes mayoristas", href: "/admin/paquetes", icon: Package },
             { label: "Reservas", href: "/admin/reservas", icon: CalendarDays, badge: pendingReservations },
+            { label: "Pagos", href: "/admin/pagos", icon: CreditCard },
             { label: "Leads", href: "/admin/leads", icon: MessageSquare },
             { label: "Operadores", href: "/admin/operadores", icon: Users },
             { label: "Agencias", href: "/admin/agencias", icon: Building2, badge: pendingAgencies },

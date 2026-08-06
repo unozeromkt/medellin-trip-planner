@@ -174,6 +174,7 @@ model Tour {
   faqs           TourFaq[]
   reviews        TourReview[]
   leadTours      LeadTour[]
+  orders         TourOrder[]
 }
 
 model TourCategory {
@@ -458,6 +459,45 @@ model PackageReservation {
   agency     Agency           @relation(fields: [agencyId], references: [id])
   package    WholesalePackage @relation(fields: [packageId], references: [id])
   passengers Passenger[]
+}
+
+// ─────────────────────────────────────────────
+// Tour Orders (Wompi payment gateway)
+// ─────────────────────────────────────────────
+
+enum TourOrderStatus {
+  pending
+  approved
+  declined
+  voided
+  error
+}
+
+model TourOrder {
+  id                 String          @id @default(cuid())
+  reference          String          @unique
+  tourId             String
+  status             TourOrderStatus @default(pending)
+  amountInCents      Int
+  currency           String          @default("COP")
+  travelDate         DateTime?
+  peopleCount        Int?
+  contactName        String
+  contactPhone       String
+  contactEmail       String?
+  contactDocument    String?
+  pickup             String?
+  message            String?
+  pageUrl            String?
+  wompiTransactionId String?
+  wompiPaymentMethod String?
+  paidAt             DateTime?
+  confirmationEmailSentAt DateTime?
+  ghlSyncedAt        DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  tour Tour @relation(fields: [tourId], references: [id])
 }
 
 model Passenger {
