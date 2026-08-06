@@ -28,13 +28,15 @@ export async function POST(request: NextRequest) {
   const { transaction } = event.data;
   const order = await db.tourOrder.findUnique({
     where: { reference: transaction.reference },
-    include: { tour: { select: { title: true } } },
+    include: { items: { include: { tour: { select: { title: true } } } } },
   });
 
   if (!order) {
     console.warn(`[wompi webhook] No TourOrder found for reference ${transaction.reference}`);
     return NextResponse.json({ received: true });
   }
+
+  const tourTitles = order.items.map((i) => i.tour.title).join(", ");
 
   const newStatus = WOMPI_STATUS_TO_ORDER_STATUS[transaction.status] ?? "error";
   const wasAlreadyApproved = order.status === "approved";
@@ -57,7 +59,7 @@ export async function POST(request: NextRequest) {
         sendOrderConfirmationEmail({
           contactName: order.contactName,
           contactEmail: order.contactEmail,
-          tourTitle: order.tour.title,
+          tourTitle: tourTitles,
           reference: order.reference,
           amountInCents: order.amountInCents,
           currency: order.currency,
@@ -74,7 +76,7 @@ export async function POST(request: NextRequest) {
         name: order.contactName,
         phone: order.contactPhone,
         email: order.contactEmail,
-        tourTitle: order.tour.title,
+        tourTitle: tourTitles,
         reference: order.reference,
         amountInCents: order.amountInCents,
       }).then((result) =>

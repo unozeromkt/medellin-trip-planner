@@ -9,8 +9,18 @@ import {
 } from "@/lib/wompi";
 
 const createOrderSchema = z.object({
-  tourId: z.string().min(1),
-  peopleCount: z.coerce.number().min(1).max(100),
+  items: z
+    .array(
+      z.object({
+        tourId: z.string().min(1),
+        // Multiplier applied to that tour's priceFrom. The single-tour sheet
+        // sends peopleCount here (price × pax); the experience-builder cart
+        // sends 1 per tour, matching the flat per-tour total shown there.
+        quantity: z.coerce.number().min(1).max(100),
+      })
+    )
+    .min(1),
+  peopleCount: z.coerce.number().min(1).max(100).optional(),
   travelDate: z.string().optional(),
   contactName: z.string().min(2),
   contactPhone: z.string().min(7),
@@ -35,28 +45,31 @@ export async function POST(request: NextRequest) {
   }
   const data = parsed.data;
 
-  const tour = await db.tour.findUnique({
-    where: { id: data.tourId },
-    select: { id: true, slug: true, title: true, priceFrom: true, currency: true, status: true },
+  const tours = await db.tour.findMany({
+    where: { id: { in: data.items.map((i) => i.tourId) } },
+    select: { id: true, slug: true, title: true, priceFrom: true, currency: true },
   });
+  const tourById = new Map(tours.map((t) => [t.id, t]));
 
-  if (!tour || !tour.priceFrom) {
-    return NextResponse.json({ error: "Tour no disponible para pago en línea" }, { status: 422 });
+  if (tours.length !== new Set(data.items.map((i) => i.tourId)).size || tours.some((t) => !t.priceFrom)) {
+    return NextResponse.json({ error: "Uno o más tours no están disponibles para pago en línea" }, { status: 422 });
   }
 
-  const currency = tour.currency || "COP";
-  const amountInCents = Math.round(tour.priceFrom * data.peopleCount * 100);
-  const reference = generateOrderReference(tour.slug);
+  const currency = tours[0].currency || "COP";
+  const amountInCents = data.items.reduce((sum, item) => {
+    const tour = tourById.get(item.tourId)!;
+    return sum + Math.round(tour.priceFrom! * item.quantity * 100);
+  }, 0);
+  const reference = generateOrderReference(tours.length === 1 ? tours[0].slug : "carrito");
 
   await db.tourOrder.create({
     data: {
       reference,
-      tourId: tour.id,
       status: "pending",
       amountInCents,
       currency,
       travelDate: data.travelDate ? new Date(data.travelDate) : null,
-      peopleCount: data.peopleCount,
+      peopleCount: data.peopleCount ?? null,
       contactName: data.contactName,
       contactPhone: data.contactPhone,
       contactEmail: data.contactEmail || null,
@@ -64,6 +77,12 @@ export async function POST(request: NextRequest) {
       pickup: data.pickup || null,
       message: data.message || null,
       pageUrl: data.pageUrl || null,
+      items: {
+        create: data.items.map((item) => {
+          const tour = tourById.get(item.tourId)!;
+          return { tourId: tour.id, quantity: item.quantity, priceSnapshot: tour.priceFrom };
+        }),
+      },
     },
   });
 

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Phone, Loader2, CheckCircle2, Layers } from "lucide-react";
+import { Phone, Loader2, CheckCircle2, Layers, CreditCard } from "lucide-react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
@@ -17,6 +18,8 @@ import { useExperienceBuilder } from "@/lib/experience-builder-context";
 import { useCurrency } from "@/lib/currency-context";
 import { formatDuration } from "@/lib/mock-data";
 import { buildWhatsAppMessage } from "@/lib/whatsapp";
+import { openWompiCheckout } from "@/lib/wompi-client";
+import { CardBrandBadges } from "@/components/payments/CardBrandBadges";
 
 const schema = z.object({
   name: z.string().min(2, "Ingresa tu nombre completo"),
@@ -53,8 +56,11 @@ interface LeadFormSheetProps {
 export function LeadFormSheet({ open, onOpenChange }: LeadFormSheetProps) {
   const { selectedTours, totalPrice, totalDurationMinutes, clearAll } = useExperienceBuilder();
   const { formatPrice } = useCurrency();
+  const router = useRouter();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [payingOnline, setPayingOnline] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const {
     register,
@@ -65,6 +71,51 @@ export function LeadFormSheet({ open, onOpenChange }: LeadFormSheetProps) {
     resolver: zodResolver(schema),
     defaultValues: { language: "es", peopleCount: 2 },
   });
+
+  async function onPayOnline(values: FormValues) {
+    setPaymentError(null);
+    setPayingOnline(true);
+    try {
+      const res = await fetch("/api/payments/wompi/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: selectedTours.map((t) => ({ tourId: t.id, quantity: 1 })),
+          peopleCount: values.peopleCount,
+          travelDate: values.travelDate,
+          contactName: values.name,
+          contactPhone: values.phone,
+          contactEmail: values.email || undefined,
+          message: values.message,
+          pageUrl: window.location.href,
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        const detail = body?.error || body?.issues?.[0]?.message;
+        throw new Error(detail ? `Error al crear la orden: ${detail}` : `Error al crear la orden (HTTP ${res.status})`);
+      }
+
+      const order = await res.json();
+      // Close our sheet before opening Wompi's own overlay — two stacked
+      // modals fight over body scroll lock and cut off the widget's form.
+      onOpenChange(false);
+      const result = await openWompiCheckout(order);
+
+      if (result.transaction) {
+        router.push(`/pago/resultado?ref=${order.reference}`);
+      } else {
+        onOpenChange(true);
+      }
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : "Error desconocido";
+      setPaymentError(`No pudimos iniciar el pago en línea (${detail}). Intenta de nuevo o reserva por WhatsApp.`);
+      onOpenChange(true);
+    } finally {
+      setPayingOnline(false);
+    }
+  }
 
   async function onSubmit(values: FormValues) {
     setLoading(true);
@@ -350,6 +401,36 @@ export function LeadFormSheet({ open, onOpenChange }: LeadFormSheetProps) {
                   </>
                 )}
               </Button>
+
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="flex-1 h-px bg-border" />
+                o paga en línea ahora
+                <span className="flex-1 h-px bg-border" />
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                disabled={loading || payingOnline}
+                onClick={handleSubmit(onPayOnline)}
+                className="w-full border-primary/30 text-primary hover:bg-primary/5 font-semibold rounded-xl py-3 gap-2"
+              >
+                {payingOnline ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Abriendo pasarela de pago...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="h-4 w-4" />
+                    Pagar ahora con tarjeta / PSE
+                  </>
+                )}
+              </Button>
+              <div className="flex justify-center">
+                <CardBrandBadges />
+              </div>
+              {paymentError && <p className="text-xs text-destructive text-center">{paymentError}</p>}
 
               <p className="text-xs text-muted-foreground text-center">
                 Tus datos no serán compartidos con terceros.

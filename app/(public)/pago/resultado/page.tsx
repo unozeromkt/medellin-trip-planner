@@ -23,7 +23,7 @@ export default async function PaymentResultPage({
       contactName: true,
       travelDate: true,
       peopleCount: true,
-      tour: { select: { title: true, slug: true } },
+      items: { select: { quantity: true, tour: { select: { title: true, slug: true } } } },
     },
   });
 

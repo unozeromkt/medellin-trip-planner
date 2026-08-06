@@ -101,7 +101,7 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tourId: tour.id,
+          items: [{ tourId: tour.id, quantity: values.peopleCount }],
           peopleCount: values.peopleCount,
           travelDate: values.travelDate,
           contactName: values.name,

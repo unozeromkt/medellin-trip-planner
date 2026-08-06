@@ -28,7 +28,7 @@ export default async function AdminPagosPage({
     db.tourOrder.findMany({
       where: filter ? { status: filter } : undefined,
       orderBy: { createdAt: "desc" },
-      include: { tour: { select: { title: true, slug: true } } },
+      include: { items: { select: { quantity: true, tour: { select: { title: true, slug: true } } } } },
       take: 100,
     }),
     Promise.all([
@@ -110,7 +110,9 @@ export default async function AdminPagosPage({
                         }).format(new Date(o.createdAt))}
                       </span>
                     </div>
-                    <h3 className="font-heading text-base font-bold text-[#0D1B3D]">{o.tour.title}</h3>
+                    <h3 className="font-heading text-base font-bold text-[#0D1B3D]">
+                      {o.items.map((i) => (i.quantity > 1 ? `${i.tour.title} ×${i.quantity}` : i.tour.title)).join(", ")}
+                    </h3>
                     <p className="text-sm font-body text-[#637489] mt-0.5">
                       <span className="font-semibold text-[#0D1B3D]">{o.contactName}</span> · {o.contactPhone}
                       {o.contactEmail ? ` · ${o.contactEmail}` : ""}

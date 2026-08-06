@@ -174,7 +174,7 @@ model Tour {
   faqs           TourFaq[]
   reviews        TourReview[]
   leadTours      LeadTour[]
-  orders         TourOrder[]
+  orderItems     TourOrderItem[]
 }
 
 model TourCategory {
@@ -476,7 +476,6 @@ enum TourOrderStatus {
 model TourOrder {
   id                 String          @id @default(cuid())
   reference          String          @unique
-  tourId             String
   status             TourOrderStatus @default(pending)
   amountInCents      Int
   currency           String          @default("COP")
@@ -498,7 +497,19 @@ model TourOrder {
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
 
-  tour Tour @relation(fields: [tourId], references: [id])
+  items TourOrderItem[]
+}
+
+model TourOrderItem {
+  id            String   @id @default(cuid())
+  orderId       String
+  tourId        String
+  quantity      Int      @default(1)
+  priceSnapshot Float?
+  createdAt     DateTime @default(now())
+
+  order TourOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  tour  Tour      @relation(fields: [tourId], references: [id])
 }
 
 model Passenger {

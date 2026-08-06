@@ -15,7 +15,7 @@ export interface OrderResult {
   contactName: string;
   travelDate: string | null;
   peopleCount: number | null;
-  tour: { title: string; slug: string };
+  items: { quantity: number; tour: { title: string; slug: string } }[];
 }
 
 const POLL_INTERVAL_MS = 3000;
@@ -90,10 +90,12 @@ export function PaymentResultView({ initialOrder }: { initialOrder: OrderResult 
   const cfg = STATUS_CONFIG[order.status];
   const Icon = cfg.icon;
   const showWhatsappFallback = order.status !== "approved" && order.status !== "pending";
+  const tourTitles = order.items.map((i) => i.tour.title).join(", ");
+  const firstTourSlug = order.items[0]?.tour.slug;
 
   const whatsappUrl = buildWhatsAppMessage({
     name: order.contactName,
-    selectedTours: [{ title: order.tour.title }],
+    selectedTours: order.items.map((i) => ({ title: i.tour.title })),
     source: `/pago/resultado (ref ${order.reference})`,
   }).whatsappUrl;
 
@@ -107,8 +109,8 @@ export function PaymentResultView({ initialOrder }: { initialOrder: OrderResult 
 
       <div className="bg-muted/50 rounded-xl p-4 text-left text-sm space-y-1.5 mb-6">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Tour</span>
-          <span className="font-medium text-foreground">{order.tour.title}</span>
+          <span className="text-muted-foreground">{order.items.length > 1 ? "Tours" : "Tour"}</span>
+          <span className="font-medium text-foreground text-right">{tourTitles}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Referencia</span>
@@ -132,7 +134,17 @@ export function PaymentResultView({ initialOrder }: { initialOrder: OrderResult 
             }
           />
         )}
-        <Button variant="outline" className="rounded-xl" render={<Link href={`/tours/${order.tour.slug}`}>Volver al tour</Link>} />
+        <Button
+          variant="outline"
+          className="rounded-xl"
+          render={
+            firstTourSlug ? (
+              <Link href={`/tours/${firstTourSlug}`}>{order.items.length > 1 ? "Ver tours" : "Volver al tour"}</Link>
+            ) : (
+              <Link href="/tours">Ver tours</Link>
+            )
+          }
+        />
       </div>
     </div>
   );
