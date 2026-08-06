@@ -48,20 +48,40 @@ function loadWompiWidgetScript(): Promise<void> {
   return widgetScriptPromise;
 }
 
+function describeThrown(value: unknown): string {
+  if (value instanceof Error) return value.message;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
 export async function openWompiCheckout(config: WompiCheckoutConfig): Promise<WompiCheckoutResult> {
   await loadWompiWidgetScript();
   if (!window.WidgetCheckout) throw new Error("Widget de Wompi no disponible");
 
-  return new Promise((resolve) => {
-    const checkout = new window.WidgetCheckout!({
-      currency: config.currency,
-      amountInCents: config.amountInCents,
-      reference: config.reference,
-      publicKey: config.publicKey,
-      signature: { integrity: config.signature },
-      redirectUrl: config.redirectUrl,
-      customerData: config.customerData,
+  const widgetConfig = {
+    currency: config.currency,
+    amountInCents: config.amountInCents,
+    reference: config.reference,
+    publicKey: config.publicKey,
+    signature: { integrity: config.signature },
+    redirectUrl: config.redirectUrl,
+    customerData: config.customerData,
+  };
+
+  try {
+    return await new Promise((resolve, reject) => {
+      try {
+        const checkout = new window.WidgetCheckout!(widgetConfig);
+        checkout.open((result) => resolve(result));
+      } catch (constructError) {
+        reject(constructError);
+      }
     });
-    checkout.open((result) => resolve(result));
-  });
+  } catch (err) {
+    console.error("[wompi] Widget rejected config:", widgetConfig, "reason:", err);
+    throw new Error(describeThrown(err));
+  }
 }
