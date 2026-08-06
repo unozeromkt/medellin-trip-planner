@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { MessageCircle, CreditCard, ClipboardList, ChevronRight } from "lucide-react";
-import { LEAD_STATUS_LABEL } from "@/lib/lead-status";
 
 export const metadata: Metadata = { title: "Reservas de tours | Admin" };
 
@@ -20,7 +19,6 @@ type Row = {
   paymentBadge: { label: string; className: string };
   paymentFilter: PaymentFilter;
   methodLabel: string;
-  statusLabel: string | null;
   detailHref: string;
 };
 
@@ -74,7 +72,6 @@ export default async function AdminReservasToursPage({
     paymentBadge: { label: "Pendiente (WhatsApp)", className: "bg-amber-50 text-amber-700 border-amber-200" },
     paymentFilter: "pendiente",
     methodLabel: "Solicitud por WhatsApp",
-    statusLabel: LEAD_STATUS_LABEL[l.status] ?? l.status,
     detailHref: `/admin/reservas-tours/leads/${l.id}`,
   }));
 
@@ -94,7 +91,6 @@ export default async function AdminReservasToursPage({
       methodLabel: o.wompiPaymentMethod
         ? `Wompi · ${WOMPI_METHOD_LABEL[o.wompiPaymentMethod] ?? o.wompiPaymentMethod}`
         : "Pago en línea (Wompi)",
-      statusLabel: null,
       detailHref: `/admin/reservas-tours/pagos/${o.id}`,
     };
   });
@@ -162,7 +158,6 @@ export default async function AdminReservasToursPage({
                   <th className="px-4 py-3 font-semibold">Personas / Viaje</th>
                   <th className="px-4 py-3 font-semibold">Pago</th>
                   <th className="px-4 py-3 font-semibold">Origen</th>
-                  <th className="px-4 py-3 font-semibold">Estado</th>
                   <th className="px-4 py-3 font-semibold sr-only">Ver</th>
                 </tr>
               </thead>
@@ -178,7 +173,7 @@ export default async function AdminReservasToursPage({
                       <div className="font-semibold text-[#0D1B3D]">{r.contactName}</div>
                       {r.contactPhone && <div className="text-xs text-[#637489]">{r.contactPhone}</div>}
                     </td>
-                    <td className="px-4 py-3 max-w-[220px] truncate text-[#0D1B3D]" title={r.tourTitles}>
+                    <td className="px-4 py-3 max-w-xs truncate text-[#0D1B3D]" title={r.tourTitles}>
                       {r.tourTitles}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-[#637489]">
@@ -206,7 +201,6 @@ export default async function AdminReservasToursPage({
                         {r.kind === "lead" ? "WhatsApp" : "Pago en línea"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-[#637489]">{r.statusLabel ?? "—"}</td>
                     <td className="px-4 py-3 text-right">
                       <Link
                         href={r.detailHref}
