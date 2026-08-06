@@ -16,7 +16,6 @@ const navLinks = [
   { label: "Explorar", href: "/tours" },
   { label: "Destinos", href: "/destinos" },
   { label: "Categorías", href: "/categorias" },
-  { label: "Blog", href: "/blog" },
   { label: "Contacto", href: "/contacto" },
 ];
 
