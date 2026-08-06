@@ -15,6 +15,35 @@ export function cordsToAmountInCents(pricePerPersonCOP: number, peopleCount: num
   return Math.round(pricePerPersonCOP * peopleCount * 100);
 }
 
+// Sorted longest-first so e.g. "593" (Ecuador) matches before a stray "5".
+const KNOWN_PHONE_PREFIXES = [
+  "593", "591", "595", "598", "502", "503", "504", "505", "506", "507", "509",
+  "54", "55", "56", "51", "52", "57", "58", "34", "44", "49", "33", "39",
+  "1",
+];
+
+/**
+ * Wompi's WidgetCheckout requires phoneNumberPrefix and phoneNumber as
+ * separate fields whenever customerData.phoneNumber is set. Splitting an
+ * arbitrary international number is inherently ambiguous, so this only
+ * recognizes a short list of prefixes relevant to this business and falls
+ * back to Colombia (+57), matching the default used in lib/ghl.ts.
+ */
+export function splitPhoneForWompi(phone: string): { phoneNumberPrefix: string; phoneNumber: string } {
+  const cleaned = phone.trim().replace(/[^\d+]/g, "");
+  const hasPlus = cleaned.startsWith("+");
+  const digitsOnly = hasPlus ? cleaned.slice(1) : cleaned;
+
+  if (hasPlus) {
+    const prefix = KNOWN_PHONE_PREFIXES.find((p) => digitsOnly.startsWith(p));
+    if (prefix) {
+      return { phoneNumberPrefix: `+${prefix}`, phoneNumber: digitsOnly.slice(prefix.length) };
+    }
+  }
+
+  return { phoneNumberPrefix: "+57", phoneNumber: digitsOnly.replace(/^57/, "") };
+}
+
 export function generateOrderReference(tourSlug: string): string {
   const random = Math.random().toString(36).slice(2, 10).toUpperCase();
   return `MTP-${tourSlug.slice(0, 20).toUpperCase()}-${Date.now()}-${random}`;

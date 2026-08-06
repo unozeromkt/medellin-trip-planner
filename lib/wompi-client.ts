@@ -11,6 +11,7 @@ export interface WompiCheckoutConfig {
     email?: string;
     fullName?: string;
     phoneNumber?: string;
+    phoneNumberPrefix?: string;
     legalId?: string;
     legalIdType?: string;
   };

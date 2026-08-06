@@ -5,6 +5,7 @@ import {
   buildIntegritySignature,
   generateOrderReference,
   getWompiPublicKey,
+  splitPhoneForWompi,
 } from "@/lib/wompi";
 
 const createOrderSchema = z.object({
@@ -68,6 +69,7 @@ export async function POST(request: NextRequest) {
 
   const signature = buildIntegritySignature({ reference, amountInCents, currency });
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin;
+  const { phoneNumberPrefix, phoneNumber } = splitPhoneForWompi(data.contactPhone);
 
   return NextResponse.json({
     publicKey: getWompiPublicKey(),
@@ -79,7 +81,8 @@ export async function POST(request: NextRequest) {
     customerData: {
       email: data.contactEmail || undefined,
       fullName: data.contactName,
-      phoneNumber: data.contactPhone,
+      phoneNumber,
+      phoneNumberPrefix,
       legalId: data.contactDocument || undefined,
       legalIdType: data.contactDocument ? "CC" : undefined,
     },
