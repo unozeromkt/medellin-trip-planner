@@ -66,7 +66,7 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-white text-sm mb-4">Operadores</h3>
             <ul className="space-y-2.5 text-sm">
-              {["Turtle Bus", "Aeroturex", "Guatapé Travel", "Chivas & Celebraciones"].map(
+              {["Adventure Turtle Bus", "Aeroturex", "Guatapé Travel", "Chivas & Celebraciones"].map(
                 (name) => (
                   <li key={name}>
                     <span className="hover:text-white transition-colors cursor-pointer">{name}</span>

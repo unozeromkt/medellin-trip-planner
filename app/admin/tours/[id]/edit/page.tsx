@@ -74,7 +74,7 @@ export default async function EditTourPage({ params }: { params: Promise<{ id: s
           videoUrl: tour.videoUrl,
           priceFrom: tour.priceFrom,
           priceChild: tour.priceChild,
-          duration: tour.duration,
+          durationMinutes: tour.durationMinutes,
           destinationId: tour.destinationId,
           operatorId: tour.operatorId,
           status: tour.status,

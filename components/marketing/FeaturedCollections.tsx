@@ -31,7 +31,7 @@ const COLLECTIONS = [
     id: "buses",
     title: "Aventura sin límite en buses temáticos",
     description: "Recorre la ciudad a bordo de los icónicos Turtle Bus.",
-    operator: "Turtle Bus",
+    operator: "Adventure Turtle Bus",
     tags: ["Tours Urbanos", "Vida Nocturna"],
     tourCount: 3,
     href: "/tours?q=turtle",

@@ -28,7 +28,7 @@ const tourSchema = z.object({
   description: z.string().optional(),
   priceFrom: z.coerce.number().positive().optional(),
   priceChild: z.coerce.number().positive().optional(),
-  duration: z.string().optional(),
+  durationHours: z.coerce.number().min(1, "Mínimo 1 hora").optional(),
   videoUrl: z.string().optional(),
   status: z.enum(["draft", "pending_review", "approved", "published"]),
   isFeatured: z.boolean().default(false),
@@ -54,7 +54,7 @@ export async function createTour(
     description: formData.get("description") || undefined,
     priceFrom: formData.get("priceFrom") || undefined,
     priceChild: formData.get("priceChild") || undefined,
-    duration: formData.get("duration") || undefined,
+    durationHours: formData.get("durationHours") || undefined,
     videoUrl: formData.get("videoUrl") || undefined,
     status: formData.get("status"),
     isFeatured: formData.get("isFeatured") === "on",
@@ -87,13 +87,14 @@ export async function createTour(
     (formData.get("testimonialsJson") as string) || "[]"
   );
 
-  const { priceFrom, priceChild, ...restData } = parsed.data;
+  const { priceFrom, priceChild, durationHours, ...restData } = parsed.data;
 
   await db.tour.create({
     data: {
       ...restData,
       priceFrom: priceFrom ?? undefined,
       priceChild: priceChild ?? undefined,
+      durationMinutes: durationHours ? Math.round(durationHours * 60) : undefined,
       coverImage,
       includes,
       excludes,
@@ -153,7 +154,7 @@ export async function updateTour(
     description: formData.get("description") || undefined,
     priceFrom: formData.get("priceFrom") || undefined,
     priceChild: formData.get("priceChild") || undefined,
-    duration: formData.get("duration") || undefined,
+    durationHours: formData.get("durationHours") || undefined,
     videoUrl: formData.get("videoUrl") || undefined,
     status: formData.get("status"),
     isFeatured: formData.get("isFeatured") === "on",
@@ -184,7 +185,7 @@ export async function updateTour(
     (formData.get("testimonialsJson") as string) || "[]"
   );
 
-  const { priceFrom, priceChild, ...restData } = parsed.data;
+  const { priceFrom, priceChild, durationHours, ...restData } = parsed.data;
 
   await db.$transaction(async (tx) => {
     await tx.tour.update({
@@ -193,6 +194,7 @@ export async function updateTour(
         ...restData,
         priceFrom: priceFrom ?? null,
         priceChild: priceChild ?? null,
+        durationMinutes: durationHours ? Math.round(durationHours * 60) : null,
         coverImage,
         includes,
         excludes,

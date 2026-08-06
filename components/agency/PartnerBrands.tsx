@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 const operators = [
   {
     id: "1",
-    name: "Turtle Bus",
+    name: "Adventure Turtle Bus",
     specialty: "Transporte turístico y city tours",
     experiences: 24,
     tags: ["Ciudad", "Cultural", "Grupos"],

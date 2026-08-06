@@ -597,13 +597,17 @@ export function TourForm({ destinations, categories, operators, serverAction, in
           </div>
           <div>
             <label className="block text-sm font-body font-medium text-[#0D1B3D] mb-1.5">
-              Duración
+              Duración (horas)
             </label>
             <input
-              name="duration"
-              type="text"
-              defaultValue={initialData?.duration ?? ""}
-              placeholder="Ej: 8 horas · Full day"
+              name="durationHours"
+              type="number"
+              min={1}
+              step={0.5}
+              defaultValue={
+                initialData?.durationMinutes ? initialData.durationMinutes / 60 : ""
+              }
+              placeholder="Ej: 8"
               className={inputCls()}
             />
           </div>

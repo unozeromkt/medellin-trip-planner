@@ -92,7 +92,7 @@ export type TourInitialData = {
   videoUrl: string | null;
   priceFrom: number | null;
   priceChild: number | null;
-  duration: string | null;
+  durationMinutes: number | null;
   destinationId: string;
   operatorId: string;
   status: "draft" | "pending_review" | "approved" | "published" | "rejected" | "archived";

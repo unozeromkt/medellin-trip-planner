@@ -67,7 +67,7 @@ const destMedellin = { id: "1", name: "Medellín", slug: "medellin", region: "An
 const destGuatape = { id: "2", name: "Guatapé", slug: "guatape", region: "Antioquia" };
 const destSantaFe = { id: "3", name: "Santa Fe de Antioquia", slug: "santa-fe-de-antioquia", region: "Antioquia" };
 
-const opTurtleBus = { id: "1", name: "Turtle Bus", slug: "turtle-bus", logoUrl: null };
+const opTurtleBus = { id: "1", name: "Adventure Turtle Bus", slug: "turtle-bus", logoUrl: null };
 const opAeroturex = { id: "2", name: "Aeroturex", slug: "aeroturex", logoUrl: null };
 const opGuatape  = { id: "3", name: "Guatapé Travel", slug: "guatape-travel", logoUrl: null };
 const opChivas   = { id: "4", name: "Chivas & Trolley Tours", slug: "chivas-celebraciones", logoUrl: null };
