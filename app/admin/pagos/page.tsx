@@ -155,6 +155,9 @@ export default async function AdminPagosPage({
                         </span>
                       )}
                     </div>
+                    {o.ghlSyncError && (
+                      <p className="mt-1 text-xs font-body text-red-600">GHL: {o.ghlSyncError}</p>
+                    )}
                   </div>
                 </div>
               </div>

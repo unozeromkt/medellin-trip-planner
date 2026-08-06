@@ -165,18 +165,21 @@ export interface GHLMarkPaidPayload {
   amountInCents: number;
 }
 
+export type GHLMarkPaidResult = { ok: true; note?: string } | { ok: false; error: string };
+
 /**
  * Tags the contact "pago-realizado" and, if GHL_PIPELINE_STAGE_PAID_ID is
  * configured, moves their existing Opportunity in GHL_PIPELINE_ID to that
- * stage. Never throws past this boundary, same convention as syncLeadToGHL.
+ * stage. Never throws — returns a result object instead so callers (the
+ * Wompi webhook) can persist *why* it failed instead of a silent no-op,
+ * since console.warn alone is invisible once deployed on Vercel.
  */
-export async function markGHLContactAsPaid(payload: GHLMarkPaidPayload): Promise<void> {
+export async function markGHLContactAsPaid(payload: GHLMarkPaidPayload): Promise<GHLMarkPaidResult> {
   const token = process.env.GHL_PRIVATE_TOKEN;
   const locationId = process.env.GHL_LOCATION_ID;
 
   if (!token || !locationId) {
-    console.warn("[ghl] Missing GHL_PRIVATE_TOKEN or GHL_LOCATION_ID, skipping paid sync");
-    return;
+    return { ok: false, error: "Missing GHL_PRIVATE_TOKEN or GHL_LOCATION_ID" };
   }
 
   const headers = {
@@ -204,12 +207,12 @@ export async function markGHLContactAsPaid(payload: GHLMarkPaidPayload): Promise
 
     if (!upsertRes.ok) {
       const text = await upsertRes.text().catch(() => "");
-      throw new Error(`contacts/upsert failed (${upsertRes.status}): ${text}`);
+      return { ok: false, error: `contacts/upsert failed (${upsertRes.status}): ${text}` };
     }
 
     const { contact } = (await upsertRes.json()) as { contact?: { id?: string } };
     const contactId = contact?.id;
-    if (!contactId) return;
+    if (!contactId) return { ok: false, error: "contacts/upsert response had no contact.id" };
 
     const amountLabel = `$${Math.round(payload.amountInCents / 100).toLocaleString("es-CO")} COP`;
     const noteRes = await fetch(`${GHL_API_BASE}/contacts/${contactId}/notes`, {
@@ -219,16 +222,18 @@ export async function markGHLContactAsPaid(payload: GHLMarkPaidPayload): Promise
         body: `Pago confirmado por Wompi — ${payload.tourTitle} — Ref: ${payload.reference} — ${amountLabel}`,
       }),
     });
-    if (!noteRes.ok) {
-      console.warn(`[ghl] Paid tag set but note failed (${noteRes.status})`);
-    }
+    const noteWarning = noteRes.ok ? null : `note failed (${noteRes.status})`;
 
     const pipelineId = process.env.GHL_PIPELINE_ID;
     const paidStageId = process.env.GHL_PIPELINE_STAGE_PAID_ID;
 
     if (!pipelineId || !paidStageId) {
-      console.warn("[ghl] Missing GHL_PIPELINE_ID or GHL_PIPELINE_STAGE_PAID_ID, skipping stage move");
-      return;
+      return {
+        ok: true,
+        note: [noteWarning, "tag set, stage move skipped (missing GHL_PIPELINE_STAGE_PAID_ID)"]
+          .filter(Boolean)
+          .join("; "),
+      };
     }
 
     const searchParams = new URLSearchParams({
@@ -243,15 +248,13 @@ export async function markGHLContactAsPaid(payload: GHLMarkPaidPayload): Promise
 
     if (!searchRes.ok) {
       const text = await searchRes.text().catch(() => "");
-      console.warn(`[ghl] Opportunity search failed (${searchRes.status}): ${text}`);
-      return;
+      return { ok: false, error: `opportunities/search failed (${searchRes.status}): ${text}` };
     }
 
     const { opportunities } = (await searchRes.json()) as { opportunities?: { id: string }[] };
     const opportunityId = opportunities?.[0]?.id;
     if (!opportunityId) {
-      console.warn("[ghl] No opportunity found for contact, skipping stage move");
-      return;
+      return { ok: true, note: [noteWarning, "tag set, no existing opportunity found to move"].filter(Boolean).join("; ") };
     }
 
     const moveRes = await fetch(`${GHL_API_BASE}/opportunities/${opportunityId}`, {
@@ -261,9 +264,11 @@ export async function markGHLContactAsPaid(payload: GHLMarkPaidPayload): Promise
     });
     if (!moveRes.ok) {
       const text = await moveRes.text().catch(() => "");
-      console.warn(`[ghl] Opportunity stage move failed (${moveRes.status}): ${text}`);
+      return { ok: false, error: `opportunity stage move failed (${moveRes.status}): ${text}` };
     }
+
+    return { ok: true, note: noteWarning ?? undefined };
   } catch (err) {
-    console.error("[ghl] Mark-as-paid sync failed:", err);
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
 }

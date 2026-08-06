@@ -121,15 +121,23 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
       }
 
       const order = await res.json();
+      // Close our sheet before opening Wompi's own overlay — two stacked
+      // modals fight over body scroll lock, which cut off the widget's
+      // form on smaller screens.
+      onOpenChange(false);
       const result = await openWompiCheckout(order);
 
       if (result.transaction) {
         router.push(`/pago/resultado?ref=${order.reference}`);
-        onOpenChange(false);
+      } else {
+        // Widget closed without a transaction attempt — bring the sheet
+        // back so the user can retry or fall back to WhatsApp.
+        onOpenChange(true);
       }
     } catch (err) {
       const detail = err instanceof Error ? err.message : "Error desconocido";
       setPaymentError(`No pudimos iniciar el pago en línea (${detail}). Intenta de nuevo o reserva por WhatsApp.`);
+      onOpenChange(true);
     } finally {
       setPayingOnline(false);
     }

@@ -77,7 +77,14 @@ export async function POST(request: NextRequest) {
         tourTitle: order.tour.title,
         reference: order.reference,
         amountInCents: order.amountInCents,
-      }).then(() => db.tourOrder.update({ where: { id: order.id }, data: { ghlSyncedAt: new Date() } }))
+      }).then((result) =>
+        db.tourOrder.update({
+          where: { id: order.id },
+          data: result.ok
+            ? { ghlSyncedAt: new Date(), ghlSyncError: result.note ?? null }
+            : { ghlSyncError: result.error },
+        })
+      )
     );
 
     await Promise.allSettled(sideEffects);

@@ -7,12 +7,13 @@ import {
   MapPin, Clock, Users, Star, CheckCircle2, XCircle,
   ChevronDown, ChevronUp, Plus, Check, ArrowLeft, Play, Calendar,
   ShieldCheck, Zap, Wallet, MessageCircle, X, ChevronLeft, ChevronRight,
-  ImageIcon,
+  ImageIcon, CreditCard,
 } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { TourCard } from "@/components/tours/TourCard";
 import { TourLeadFormSheet } from "@/components/tours/TourLeadFormSheet";
+import { CardBrandBadges } from "@/components/payments/CardBrandBadges";
 import { formatDuration } from "@/lib/mock-data";
 import { useExperienceBuilderOptional } from "@/lib/experience-builder-context";
 import { useCurrency } from "@/lib/currency-context";
@@ -477,6 +478,19 @@ export function TourDetailClient({ tour, relatedTours }: TourDetailClientProps) 
                       <WhatsappLogo size={20} weight="fill" />
                       Reservar por WhatsApp
                     </Button>
+                    <div className="space-y-1.5">
+                      <Button
+                        variant="outline"
+                        onClick={() => setLeadFormOpen(true)}
+                        className="w-full border-[#2BB7A6]/30 text-[#2BB7A6] hover:bg-[#2BB7A6]/5 font-semibold rounded-xl py-6 gap-2 text-[15px]"
+                      >
+                        <CreditCard className="h-5 w-5" />
+                        Pagar con tarjeta
+                      </Button>
+                      <div className="flex justify-center">
+                        <CardBrandBadges />
+                      </div>
+                    </div>
                     {builder && (
                       <Button
                         variant="outline"
