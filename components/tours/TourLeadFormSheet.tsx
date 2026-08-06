@@ -115,7 +115,9 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
       });
 
       if (!res.ok) {
-        throw new Error("No se pudo crear la orden de pago");
+        const body = await res.json().catch(() => null);
+        const detail = body?.error || body?.issues?.[0]?.message;
+        throw new Error(detail ? `Error al crear la orden: ${detail}` : `Error al crear la orden (HTTP ${res.status})`);
       }
 
       const order = await res.json();
@@ -125,8 +127,9 @@ export function TourLeadFormSheet({ open, onOpenChange, tour }: TourLeadFormShee
         router.push(`/pago/resultado?ref=${order.reference}`);
         onOpenChange(false);
       }
-    } catch {
-      setPaymentError("No pudimos iniciar el pago en línea. Intenta de nuevo o reserva por WhatsApp.");
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : "Error desconocido";
+      setPaymentError(`No pudimos iniciar el pago en línea (${detail}). Intenta de nuevo o reserva por WhatsApp.`);
     } finally {
       setPayingOnline(false);
     }
